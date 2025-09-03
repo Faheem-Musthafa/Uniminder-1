@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
+import { supabase as sharedSupabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
   const body = await req.text();
   const headerPayload = await headers();
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabase = sharedSupabase;
 
   const svix_id = headerPayload.get("svix-id")!;
   const svix_timestamp = headerPayload.get("svix-timestamp")!;
