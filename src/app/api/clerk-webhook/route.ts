@@ -3,14 +3,14 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: Request) {
   const body = await req.text();
-  const headerPayload = headers();
+  const headerPayload = await headers();
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   const svix_id = headerPayload.get("svix-id")!;
   const svix_timestamp = headerPayload.get("svix-timestamp")!;
@@ -18,22 +18,30 @@ export async function POST(req: Request) {
 
   const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
 
-  let evt: any;
+  // Define a narrow event type to avoid `any` and satisfy ESLint
+  type SvixEvent<T = unknown> = { type: string; data: T };
+  type UserCreatedData = {
+    id: string;
+    first_name?: string | null;
+    last_name?: string | null;
+  };
+
+  let evt: SvixEvent | undefined;
   try {
     evt = wh.verify(body, {
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
-    });
+    }) as unknown as SvixEvent;
   } catch (err) {
     console.error("❌ Webhook verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  console.log("✅ Webhook received:", evt.type);
+  console.log("✅ Webhook received:", evt?.type);
 
-  if (evt.type === "user.created") {
-    const { id, first_name, last_name } = evt.data;
+  if (evt?.type === "user.created") {
+    const { id, first_name, last_name } = evt.data as UserCreatedData;
 
     console.log("🟢 Trying to insert:", { id, first_name, last_name });
 
