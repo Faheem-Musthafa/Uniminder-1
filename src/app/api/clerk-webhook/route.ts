@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { supabase as sharedSupabase } from "@/lib/supabase";
-
+import { getSupabase } from "@/lib/supabase";
 export async function POST(req: Request) {
   const body = await req.text();
   const headerPayload = await headers();
 
-  const supabase = sharedSupabase;
+  const supabase = getSupabase();
 
   const svix_id = headerPayload.get("svix-id")!;
   const svix_timestamp = headerPayload.get("svix-timestamp")!;

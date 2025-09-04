@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import Link from "next/link";
 
 export default async function LandingPage() {
+  const supabase = getSupabase();
   const { data, error } = await supabase.from("profiles").select("*");
 
   console.log("Profiles:", data, error);
