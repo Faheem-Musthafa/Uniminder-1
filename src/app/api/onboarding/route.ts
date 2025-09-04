@@ -51,7 +51,9 @@ export async function POST(req: Request) {
       console.error("Supabase fetch after upsert error:", fetchError);
       const debug = process.env.DEBUG_ONBOARDING === "true";
       return NextResponse.json(
-        debug ? { error: fetchError.message, details: fetchError } : { error: fetchError.message },
+        debug
+          ? { error: fetchError.message, details: fetchError }
+          : { error: fetchError.message },
         { status: 500 }
       );
     }
