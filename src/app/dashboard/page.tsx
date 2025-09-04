@@ -1,8 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
+import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
-import { supabase as sharedSupabase } from "@/lib/supabase";
 
-const supabase = sharedSupabase;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export default async function Dashboard() {
   const { userId } = await auth();
