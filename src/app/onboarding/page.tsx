@@ -2,20 +2,39 @@
 
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export default function Onboarding() {
   const { user } = useUser();
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit() {
     setLoading(true);
-    await fetch("/api/onboarding", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role }),
-    });
-    window.location.href = "/dashboard";
+    try {
+      const res = await fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        console.error("Onboarding failed:", body);
+        alert("Failed to save onboarding. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // redirect client-side for a smoother navigation
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Onboarding error:", err);
+      alert("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

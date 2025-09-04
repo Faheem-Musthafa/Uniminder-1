@@ -13,13 +13,32 @@ export async function POST(req: Request) {
 
   const { role } = await req.json();
 
-  const { error } = await supabase
+  // Try to update an existing profile first
+  const { data: existing } = await supabase
     .from("profiles")
-    .update({ role, onboarded: true })
-    .eq("user_id", userId);
+    .select("id")
+    .eq("user_id", userId)
+    .single();
 
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (existing) {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ role, onboarded: true })
+      .eq("user_id", userId);
+
+    if (error)
+      return NextResponse.json({ error: error.message }, { status: 500 });
+  } else {
+    // Insert if no profile exists yet
+    const { error } = await supabase.from("profiles").insert({
+      user_id: userId,
+      role,
+      onboarded: true,
+    });
+
+    if (error)
+      return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }
