@@ -33,8 +33,11 @@ export async function POST(req: Request) {
 
     if (upsertError) {
       console.error("Supabase upsert error:", upsertError);
+      const debug = process.env.DEBUG_ONBOARDING === "true";
       return NextResponse.json(
-        { error: upsertError.message, details: upsertError },
+        debug
+          ? { error: upsertError.message, details: upsertError }
+          : { error: upsertError.message },
         { status: 500 }
       );
     }
@@ -48,12 +51,14 @@ export async function POST(req: Request) {
 
     if (fetchError) {
       console.error("Supabase fetch after upsert error:", fetchError);
-      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+      const debug = process.env.DEBUG_ONBOARDING === "true";
+      return NextResponse.json(
+        debug ? { error: fetchError.message, details: fetchError } : { error: fetchError.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, data: row });
-
-    return NextResponse.json({ success: true });
   } catch (err: unknown) {
     console.error("Onboarding handler error:", err);
     const message = err instanceof Error ? err.message : String(err);
