@@ -6,6 +6,7 @@ create table if not exists profiles (
   id uuid default gen_random_uuid() primary key,
   user_id text not null unique,
   name text,
+  role text default null,
   onboarded boolean default false,
   created_at timestamptz default now()
 );

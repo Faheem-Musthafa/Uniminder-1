@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
@@ -9,6 +9,7 @@ export default function Onboarding() {
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [roles, setRoles] = useState<{ id: string; label: string }[]>([]);
 
   async function handleSubmit() {
     setLoading(true);
@@ -27,6 +28,9 @@ export default function Onboarding() {
         return;
       }
 
+      const body = await res.json().catch(() => ({}));
+      console.log("Onboarding success response:", body);
+
       // redirect client-side for a smoother navigation
       router.push("/dashboard");
     } catch (err) {
@@ -36,6 +40,30 @@ export default function Onboarding() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/roles");
+        if (!res.ok) throw new Error("Failed to fetch roles");
+        const body = await res.json();
+        if (mounted) setRoles(body.roles || []);
+      } catch (err) {
+        console.error("Failed to load roles", err);
+        // fallback
+        if (mounted)
+          setRoles([
+            { id: "student", label: "Student" },
+            { id: "alumni", label: "Alumni" },
+            { id: "aspirant", label: "Aspirant" },
+          ]);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
@@ -48,9 +76,11 @@ export default function Onboarding() {
         className="border p-2 rounded mb-4"
       >
         <option value="">Select your role</option>
-        <option value="student">Student</option>
-        <option value="alumni">Alumni</option>
-        <option value="aspirant">Aspirant</option>
+        {roles.map((r) => (
+          <option key={r.id} value={r.id}>
+            {r.label}
+          </option>
+        ))}
       </select>
       <button
         onClick={handleSubmit}

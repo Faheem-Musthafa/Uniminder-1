@@ -14,44 +14,44 @@ export async function POST(req: Request) {
 
     const { role } = await req.json();
 
-    // Try to update an existing profile first
-    const { data: existing, error: selectError } = await supabase
+    // Validate role
+    const allowed = ["student", "alumni", "aspirant"];
+    if (!allowed.includes(role)) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    }
+
+    // Use upsert to create or update in a single call
+    const payload = {
+      user_id: userId,
+      role,
+      onboarded: true,
+    } as Record<string, unknown>;
+
+    const { error: upsertError } = await supabase
       .from("profiles")
-      .select("id")
+      .upsert(payload, { onConflict: "user_id" });
+
+    if (upsertError) {
+      console.error("Supabase upsert error:", upsertError);
+      return NextResponse.json(
+        { error: upsertError.message, details: upsertError },
+        { status: 500 }
+      );
+    }
+
+    // Fetch the upserted row for confirmation
+    const { data: row, error: fetchError } = await supabase
+      .from("profiles")
+      .select("*")
       .eq("user_id", userId)
       .single();
 
-    // If select returned an unexpected error, return it
-    if (selectError && !existing) {
-      console.error("Supabase select error:", selectError);
-      // proceed assuming no existing row only if it's a not-found style error
-      // but to be safe, return the error
-      return NextResponse.json({ error: selectError.message }, { status: 500 });
+    if (fetchError) {
+      console.error("Supabase fetch after upsert error:", fetchError);
+      return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
 
-    if (existing) {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ role, onboarded: true })
-        .eq("user_id", userId);
-
-      if (error) {
-        console.error("Supabase update error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
-    } else {
-      // Insert if no profile exists yet
-      const { error } = await supabase.from("profiles").insert({
-        user_id: userId,
-        role,
-        onboarded: true,
-      });
-
-      if (error) {
-        console.error("Supabase insert error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
-    }
+    return NextResponse.json({ success: true, data: row });
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
