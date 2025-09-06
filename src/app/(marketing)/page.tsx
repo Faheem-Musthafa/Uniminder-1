@@ -50,7 +50,7 @@ export default async function LandingPage() {
             {/* Small-screen image (below text) */}
             <div className="block md:hidden mt-6">
               <Image
-                src="/image/ChatGPT Image Sep 4, 2025, 12_43_50 PM.png"
+                src="/image/Hero.png"
                 alt="Students connecting"
                 width={600}
                 height={320}
@@ -60,9 +60,9 @@ export default async function LandingPage() {
           </div>
 
           {/* Right-side image for md+ */}
-          <div className="hidden md:block px-4">
+          <div className="hidden md:block px-4SS">
             <Image
-              src="/image/ChatGPT Image Sep 4, 2025, 12_43_50 PM.png"
+              src="/image/Hero.png"
               alt="Students connecting"
               width={700}
               height={400}
