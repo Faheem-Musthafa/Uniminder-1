@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
@@ -29,9 +29,7 @@ import { Progress } from "@/components/ui/progress";
 
 // ✅ Validation schema
 const formSchema = z.object({
-  role: z.enum(["student", "alumni", "aspirant"], {
-    required_error: "Please select a role",
-  }),
+  role: z.enum(["student", "alumni", "aspirant"]),
   name: z.string().min(2, "Name is required"),
   university: z.string().optional(),
   graduationYear: z.string().optional(),
@@ -63,6 +61,7 @@ export default function MultiStepForm() {
     setIsSubmitting(true);
 
     try {
+      const supabase = getSupabase();
       const { error } = await supabase.from("profiles").upsert({
         id: user.id,
         email: user.emailAddresses[0]?.emailAddress,
@@ -95,7 +94,7 @@ export default function MultiStepForm() {
   const prevStep = () => setStep((prev) => prev - 1);
 
   // ✅ Helper function to validate specific fields per step
-  const getFieldsForStep = (currentStep: number) => {
+  const getFieldsForStep = (currentStep: number): (keyof z.infer<typeof formSchema>)[] => {
     switch (currentStep) {
       case 1:
         return ["role"];
