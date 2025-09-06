@@ -16,13 +16,13 @@ export default function NavBar() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-4">
-          <Link href="/about">
+          <Link href="#about">
             <Button variant="link">About</Button>
           </Link>
-          <Link href="/features">
+          <Link href="#features">
             <Button variant="link">Features</Button>
           </Link>
-          <Link href="/faqs">
+          <Link href="#faqs">
             <Button variant="link">FAQs</Button>
           </Link>
         </nav>

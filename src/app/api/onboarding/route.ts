@@ -10,6 +10,7 @@ interface OnboardingData {
   email?: string;
   location?: string;
   college?: string;
+  degree?: string;
   branch?: string;
   passingYear?: string;
   company?: string;
@@ -86,6 +87,7 @@ export async function POST(req: Request) {
       full_name: data.fullName,
       location: data.location || null,
       college: data.college || null,
+      degree: data.degree || null,
       branch: data.branch || null,
       passing_year: data.passingYear || null,
       company: data.company || null,
@@ -107,6 +109,14 @@ export async function POST(req: Request) {
       }
     });
 
+    // Log payload for debugging
+    console.log("🔍 Attempting to save payload:", {
+      userId,
+      payloadKeys: Object.keys(payload),
+      role: payload.role,
+      fullName: payload.full_name,
+    });
+
     // Use upsert to create or update profile
     const { data: profile, error: upsertError } = await supabase
       .from("profiles")
@@ -119,11 +129,22 @@ export async function POST(req: Request) {
 
     if (upsertError) {
       console.error("❌ Supabase upsert error:", upsertError);
+      console.error("❌ Error details:", {
+        code: upsertError.code,
+        message: upsertError.message,
+        hint: upsertError.hint,
+        details: upsertError.details,
+      });
+
       const debug = process.env.NODE_ENV === "development";
       return NextResponse.json(
         {
           error: "Failed to save profile",
-          ...(debug && { details: upsertError.message }),
+          ...(debug && {
+            details: upsertError.message,
+            code: upsertError.code,
+            hint: upsertError.hint,
+          }),
         },
         { status: 500 }
       );

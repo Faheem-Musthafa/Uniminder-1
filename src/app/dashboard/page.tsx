@@ -11,12 +11,12 @@ export default async function Dashboard() {
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("user_id", userId)
+    .eq("id", userId)
     .single();
 
   if (!profile?.onboarded) {
     redirect("/onboarding");
   }
 
-  return <div>🎉 Welcome to your Dashboard, {profile.name}</div>;
+  return <div>🎉 Welcome to your Dashboard, {profile.full_name}</div>;
 }

@@ -17,6 +17,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,12 +35,244 @@ const steps = [
   { id: 3, label: "Finish", icon: "🎉" },
 ];
 
+// Predefined data for dropdowns
+const DEGREE_TYPES = [
+  "Bachelor's Degree",
+  "Master's Degree",
+  "Doctoral Degree (PhD)",
+  "Associate Degree",
+  "Professional Degree",
+  "Diploma/Certificate",
+  "High School",
+  "Other",
+];
+
+const MAJORS_BRANCHES = [
+  // Engineering
+  "Computer Science & Engineering",
+  "Information Technology",
+  "Electronics & Communication Engineering",
+  "Mechanical Engineering",
+  "Civil Engineering",
+  "Electrical Engineering",
+  "Chemical Engineering",
+  "Aerospace Engineering",
+  "Biomedical Engineering",
+  "Industrial Engineering",
+
+  // Business & Management
+  "Business Administration (MBA/BBA)",
+  "Finance",
+  "Marketing",
+  "Human Resources",
+  "Operations Management",
+  "International Business",
+
+  // Sciences
+  "Computer Science",
+  "Data Science",
+  "Mathematics",
+  "Physics",
+  "Chemistry",
+  "Biology",
+  "Biotechnology",
+  "Environmental Science",
+
+  // Liberal Arts & Others
+  "Economics",
+  "Psychology",
+  "Sociology",
+  "Political Science",
+  "Literature",
+  "History",
+  "Philosophy",
+  "Design",
+  "Arts",
+  "Media & Communication",
+  "Law",
+  "Medicine",
+  "Nursing",
+  "Education",
+  "Other",
+];
+
+const ENTRANCE_EXAMS = [
+  // Indian Engineering
+  "JEE Main",
+  "JEE Advanced",
+  "BITSAT",
+  "VITEEE",
+  "SRMJEEE",
+  "MET",
+
+  // Indian Management
+  "CAT",
+  "XAT",
+  "SNAP",
+  "NMAT",
+  "MAT",
+  "CMAT",
+
+  // Indian Medical
+  "NEET UG",
+  "NEET PG",
+  "AIIMS",
+
+  // International
+  "SAT",
+  "ACT",
+  "GRE",
+  "GMAT",
+  "TOEFL",
+  "IELTS",
+
+  // Other Government Exams
+  "UPSC",
+  "SSC",
+  "Bank PO",
+  "GATE",
+  "NET/JRF",
+
+  "Other",
+];
+
+const POPULAR_COMPANIES = [
+  // Tech Giants
+  "Google",
+  "Microsoft",
+  "Apple",
+  "Amazon",
+  "Meta (Facebook)",
+  "Netflix",
+  "Tesla",
+  "Uber",
+  "Airbnb",
+  "Spotify",
+
+  // Indian IT
+  "Tata Consultancy Services (TCS)",
+  "Infosys",
+  "Wipro",
+  "HCL Technologies",
+  "Tech Mahindra",
+  "Capgemini",
+  "Accenture",
+  "IBM",
+  "Cognizant",
+  "Mindtree",
+
+  // Consulting & Finance
+  "McKinsey & Company",
+  "Boston Consulting Group",
+  "Deloitte",
+  "PwC",
+  "EY",
+  "KPMG",
+  "Goldman Sachs",
+  "Morgan Stanley",
+  "JP Morgan",
+  "Citibank",
+
+  // Startups & Unicorns
+  "Flipkart",
+  "Paytm",
+  "Zomato",
+  "Swiggy",
+  "Ola",
+  "PhonePe",
+  "Razorpay",
+  "CRED",
+  "Dream11",
+  "Unacademy",
+
+  // Traditional Industries
+  "Reliance Industries",
+  "Tata Group",
+  "Aditya Birla Group",
+  "L&T",
+  "Mahindra Group",
+  "ITC",
+  "HDFC Bank",
+  "ICICI Bank",
+
+  "Other",
+];
+
+const JOB_DESIGNATIONS = [
+  // Software Development
+  "Software Engineer",
+  "Senior Software Engineer",
+  "Lead Developer",
+  "Full Stack Developer",
+  "Frontend Developer",
+  "Backend Developer",
+  "DevOps Engineer",
+  "Site Reliability Engineer",
+  "Technical Architect",
+
+  // Data & Analytics
+  "Data Scientist",
+  "Data Analyst",
+  "Machine Learning Engineer",
+  "AI Engineer",
+  "Business Analyst",
+  "Product Analyst",
+
+  // Product & Design
+  "Product Manager",
+  "Senior Product Manager",
+  "Product Owner",
+  "UX Designer",
+  "UI Designer",
+  "Product Designer",
+
+  // Management & Leadership
+  "Team Lead",
+  "Engineering Manager",
+  "Project Manager",
+  "Director",
+  "Vice President",
+  "CTO",
+  "CEO",
+
+  // Consulting & Finance
+  "Consultant",
+  "Senior Consultant",
+  "Manager",
+  "Associate",
+  "Financial Analyst",
+  "Investment Banker",
+  "Risk Analyst",
+
+  // Marketing & Sales
+  "Marketing Manager",
+  "Digital Marketing Specialist",
+  "Sales Executive",
+  "Business Development Manager",
+  "Growth Manager",
+
+  // Other
+  "Research Scientist",
+  "Quality Assurance Engineer",
+  "Technical Writer",
+  "Customer Success Manager",
+  "Operations Manager",
+  "HR Manager",
+
+  "Other",
+];
+
+const GRADUATION_YEARS = Array.from({ length: 30 }, (_, i) =>
+  (new Date().getFullYear() + 5 - i).toString()
+);
+
 // Enhanced validation schema matching API route
 const formSchema = z.object({
   role: z.enum(["student", "alumni", "aspirant"]),
   fullName: z.string().min(2, "Full name is required"),
   location: z.string().optional(),
   college: z.string().optional(),
+  degree: z.string().optional(),
   branch: z.string().optional(),
   passingYear: z.string().optional(),
   company: z.string().optional(),
@@ -60,6 +299,7 @@ export default function MultiStepForm() {
       fullName: "",
       location: "",
       college: "",
+      degree: "",
       branch: "",
       passingYear: "",
       company: "",
@@ -92,19 +332,24 @@ export default function MultiStepForm() {
     setSubmitError("");
 
     try {
+      const payload = {
+        ...values,
+        userId: user.id,
+        email: user.emailAddresses[0]?.emailAddress,
+      };
+
+      console.log("🚀 Submitting onboarding data:", payload);
+
       const response = await fetch("/api/onboarding", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...values,
-          userId: user.id,
-          email: user.emailAddresses[0]?.emailAddress,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
+      console.log("📬 API Response:", { status: response.status, result });
 
       if (!response.ok) {
         throw new Error(result.error || "Failed to save profile");
@@ -149,8 +394,17 @@ export default function MultiStepForm() {
         return ["role", "fullName"];
       case 2:
         const role = form.watch("role");
-        if (role === "student") return ["college", "passingYear"];
-        if (role === "alumni") return ["college", "passingYear", "company"];
+        if (role === "student")
+          return ["college", "degree", "branch", "passingYear"];
+        if (role === "alumni")
+          return [
+            "college",
+            "degree",
+            "branch",
+            "passingYear",
+            "company",
+            "designation",
+          ];
         if (role === "aspirant") return ["entranceExam"];
         return [];
       case 3:
@@ -333,31 +587,86 @@ export default function MultiStepForm() {
                         </FormItem>
                       )}
                     />
+
+                    <FormField
+                      control={form.control}
+                      name="degree"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Degree Type *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your degree type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {DEGREE_TYPES.map((degree) => (
+                                <SelectItem key={degree} value={degree}>
+                                  {degree}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={form.control}
                       name="branch"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Branch/Major</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., Computer Science"
-                              {...field}
-                            />
-                          </FormControl>
+                          <FormLabel>Branch/Major *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your field of study" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {MAJORS_BRANCHES.map((major) => (
+                                <SelectItem key={major} value={major}>
+                                  {major}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={form.control}
                       name="passingYear"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Expected Graduation Year *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 2025" {...field} />
-                          </FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select graduation year" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {GRADUATION_YEARS.map((year) => (
+                                <SelectItem key={year} value={year}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -383,41 +692,162 @@ export default function MultiStepForm() {
                         </FormItem>
                       )}
                     />
+
+                    <FormField
+                      control={form.control}
+                      name="degree"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Degree Type *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your degree type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {DEGREE_TYPES.map((degree) => (
+                                <SelectItem key={degree} value={degree}>
+                                  {degree}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="branch"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Field of Study *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your major" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {MAJORS_BRANCHES.map((major) => (
+                                <SelectItem key={major} value={major}>
+                                  {major}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={form.control}
                       name="passingYear"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Graduation Year *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 2020" {...field} />
-                          </FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select graduation year" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {GRADUATION_YEARS.map((year) => (
+                                <SelectItem key={year} value={year}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={form.control}
                       name="company"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Current Company *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Where you work" {...field} />
-                          </FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select or type your company" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {POPULAR_COMPANIES.map((company) => (
+                                <SelectItem key={company} value={company}>
+                                  {company}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="mt-2">
+                            <Input
+                              placeholder="Or type your company name"
+                              value={
+                                field.value === "Other" ? "" : field.value || ""
+                              }
+                              onChange={(e) => field.onChange(e.target.value)}
+                              className="text-sm"
+                            />
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={form.control}
                       name="designation"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Job Title</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your position" {...field} />
-                          </FormControl>
+                          <FormLabel>Job Title *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your role" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {JOB_DESIGNATIONS.map((role) => (
+                                <SelectItem key={role} value={role}>
+                                  {role}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="mt-2">
+                            <Input
+                              placeholder="Or type your job title"
+                              value={
+                                field.value === "Other" ? "" : field.value || ""
+                              }
+                              onChange={(e) => field.onChange(e.target.value)}
+                              className="text-sm"
+                            />
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -433,12 +863,33 @@ export default function MultiStepForm() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Target Entrance Exam *</FormLabel>
-                          <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your target exam" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {ENTRANCE_EXAMS.map((exam) => (
+                                <SelectItem key={exam} value={exam}>
+                                  {exam}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="mt-2">
                             <Input
-                              placeholder="e.g., JEE, CAT, GMAT"
-                              {...field}
+                              placeholder="Or type your target exam"
+                              value={
+                                field.value === "Other" ? "" : field.value || ""
+                              }
+                              onChange={(e) => field.onChange(e.target.value)}
+                              className="text-sm"
                             />
-                          </FormControl>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
