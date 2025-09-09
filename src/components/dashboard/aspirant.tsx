@@ -2,13 +2,22 @@ import { SignOutButton } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Profile } from "@/types";
-import { BookOpen, Target, Users, Calendar, MessageSquare, TrendingUp } from "lucide-react";
+import {
+  BookOpen,
+  Target,
+  Users,
+  Calendar,
+  MessageSquare,
+  TrendingUp,
+} from "lucide-react";
 
 interface AspirantsDashboardProps {
   profile?: Profile | null;
 }
 
-export default function AspirantsDashboard({ profile }: AspirantsDashboardProps) {
+export default function AspirantsDashboard({
+  profile,
+}: AspirantsDashboardProps) {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -41,7 +50,7 @@ export default function AspirantsDashboard({ profile }: AspirantsDashboardProps)
             <CardContent>
               <div className="space-y-2">
                 <p className="text-2xl font-bold text-blue-600">
-                  {profile?.entrance_exam || 'Not Set'}
+                  {profile?.entrance_exam || "Not Set"}
                 </p>
                 {profile?.target_college && (
                   <p className="text-sm text-gray-600">
@@ -69,7 +78,10 @@ export default function AspirantsDashboard({ profile }: AspirantsDashboardProps)
                   <p className="text-sm text-gray-600">Study Goal Complete</p>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: '75%' }}></div>
+                  <div
+                    className="bg-green-600 h-2 rounded-full"
+                    style={{ width: "75%" }}
+                  ></div>
                 </div>
               </div>
             </CardContent>
@@ -131,16 +143,24 @@ export default function AspirantsDashboard({ profile }: AspirantsDashboardProps)
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">Next Session</p>
-                    <p className="text-sm text-gray-600">Math Prep - Tomorrow 2PM</p>
+                    <p className="text-sm text-gray-600">
+                      Math Prep - Tomorrow 2PM
+                    </p>
                   </div>
                   <Button size="sm">Join</Button>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" className="flex flex-col gap-2 h-20">
+                  <Button
+                    variant="outline"
+                    className="flex flex-col gap-2 h-20"
+                  >
                     <MessageSquare className="h-5 w-5" />
                     <span className="text-sm">Messages</span>
                   </Button>
-                  <Button variant="outline" className="flex flex-col gap-2 h-20">
+                  <Button
+                    variant="outline"
+                    className="flex flex-col gap-2 h-20"
+                  >
                     <Users className="h-5 w-5" />
                     <span className="text-sm">Find Mentors</span>
                   </Button>

@@ -2,7 +2,16 @@ import { SignOutButton } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Profile } from "@/types";
-import { GraduationCap, BookOpen, Users, Calendar, MessageSquare, Trophy, Clock, Target } from "lucide-react";
+import {
+  GraduationCap,
+  BookOpen,
+  Users,
+  Calendar,
+  MessageSquare,
+  Trophy,
+  Clock,
+  Target,
+} from "lucide-react";
 
 interface StudentDashboardProps {
   profile?: Profile | null;
@@ -40,12 +49,24 @@ export default function StudentDashboard({ profile }: StudentDashboardProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p className="text-sm"><strong>College:</strong></p>
-                <p className="text-sm text-gray-600">{profile?.college || 'Not specified'}</p>
-                <p className="text-sm"><strong>Degree:</strong></p>
-                <p className="text-sm text-gray-600">{profile?.degree || 'Not specified'}</p>
-                <p className="text-sm"><strong>Branch:</strong></p>
-                <p className="text-sm text-gray-600">{profile?.branch || 'Not specified'}</p>
+                <p className="text-sm">
+                  <strong>College:</strong>
+                </p>
+                <p className="text-sm text-gray-600">
+                  {profile?.college || "Not specified"}
+                </p>
+                <p className="text-sm">
+                  <strong>Degree:</strong>
+                </p>
+                <p className="text-sm text-gray-600">
+                  {profile?.degree || "Not specified"}
+                </p>
+                <p className="text-sm">
+                  <strong>Branch:</strong>
+                </p>
+                <p className="text-sm text-gray-600">
+                  {profile?.branch || "Not specified"}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -64,7 +85,9 @@ export default function StudentDashboard({ profile }: StudentDashboardProps) {
                   <p className="text-sm text-gray-600">Current CGPA</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-green-600">85%</div>
+                  <div className="text-lg font-semibold text-green-600">
+                    85%
+                  </div>
                   <p className="text-xs text-gray-600">Attendance</p>
                 </div>
               </div>
@@ -80,12 +103,17 @@ export default function StudentDashboard({ profile }: StudentDashboardProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p className="text-sm"><strong>Expected Graduation:</strong></p>
+                <p className="text-sm">
+                  <strong>Expected Graduation:</strong>
+                </p>
                 <p className="text-lg font-semibold text-purple-600">
-                  {profile?.passing_year || 'Not set'}
+                  {profile?.passing_year || "Not set"}
                 </p>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: '60%' }}></div>
+                  <div
+                    className="bg-purple-600 h-2 rounded-full"
+                    style={{ width: "60%" }}
+                  ></div>
                 </div>
                 <p className="text-xs text-gray-600">60% Complete</p>
               </div>
@@ -127,26 +155,41 @@ export default function StudentDashboard({ profile }: StudentDashboardProps) {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { name: 'Data Structures & Algorithms', progress: 75, grade: 'A-' },
-                  { name: 'Database Management Systems', progress: 60, grade: 'B+' },
-                  { name: 'Software Engineering', progress: 85, grade: 'A' },
-                  { name: 'Computer Networks', progress: 45, grade: 'B' },
+                  {
+                    name: "Data Structures & Algorithms",
+                    progress: 75,
+                    grade: "A-",
+                  },
+                  {
+                    name: "Database Management Systems",
+                    progress: 60,
+                    grade: "B+",
+                  },
+                  { name: "Software Engineering", progress: 85, grade: "A" },
+                  { name: "Computer Networks", progress: 45, grade: "B" },
                 ].map((course, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <div className="flex-1">
                       <p className="font-medium">{course.name}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="w-24 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full" 
+                          <div
+                            className="bg-blue-600 h-2 rounded-full"
                             style={{ width: `${course.progress}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm text-gray-600">{course.progress}%</span>
+                        <span className="text-sm text-gray-600">
+                          {course.progress}%
+                        </span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="font-semibold text-green-600">{course.grade}</span>
+                      <span className="font-semibold text-green-600">
+                        {course.grade}
+                      </span>
                     </div>
                   </div>
                 ))}
