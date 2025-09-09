@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
+import { SignOutButton } from "@clerk/nextjs";
 
 const supabase = getSupabase();
 
@@ -18,5 +19,11 @@ export default async function Dashboard() {
     redirect("/onboarding");
   }
 
-  return <div>🎉 Welcome to your Dashboard, {profile.full_name}</div>;
+  return (
+    <div>
+      🎉 Welcome to your Dashboard, {profile.full_name} and you are a{" "}
+      {profile.role})
+      <SignOutButton />
+    </div>
+  );
 }
