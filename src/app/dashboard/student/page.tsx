@@ -1,10 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
+import StudentDashboard from "@/components/dashboard/student";
 
 const supabase = getSupabase();
 
-export default async function Dashboard() {
+export default async function StudentDashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
@@ -18,12 +19,9 @@ export default async function Dashboard() {
     redirect("/onboarding");
   }
 
-  switch (profile?.role) {
-    case "student":
-      redirect("/dashboard/student");
-    case "alumni":
-      redirect("/dashboard/alumni");
-    default:
-      redirect("/dashboard/aspirant");
+  if (profile.role !== "student") {
+    redirect("/dashboard");
   }
+
+  return <StudentDashboard profile={profile} />;
 }
