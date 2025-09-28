@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -415,8 +416,8 @@ export default function MultiStepForm() {
   };
 
   return (
-    <Card className="w-full max-w-lg shadow-lg">
-      <CardHeader className="text-center">
+    <Card className="w-full max-w-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xl rounded-2xl bg-white/80 dark:bg-gray-950/70 backdrop-blur">
+      <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl font-bold">
           Welcome to UniMinder!
         </CardTitle>
@@ -431,12 +432,12 @@ export default function MultiStepForm() {
               <div className="flex flex-col items-center">
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center border-2 font-semibold transition-all duration-300",
+                    "w-10 h-10 rounded-full flex items-center justify-center border font-semibold transition-all duration-300 shadow-sm",
                     step >= s.id
                       ? "bg-blue-600 text-white border-blue-600 shadow-lg scale-110"
                       : step === s.id - 1
-                      ? "bg-blue-100 text-blue-600 border-blue-300"
-                      : "bg-white text-gray-400 border-gray-300"
+                      ? "bg-blue-50 text-blue-600 border-blue-200"
+                      : "bg-white text-gray-400 border-gray-200 dark:bg-gray-900 dark:border-gray-800"
                   )}
                 >
                   {step > s.id ? (
@@ -459,8 +460,8 @@ export default function MultiStepForm() {
               {i < steps.length - 1 && (
                 <div
                   className={cn(
-                    "w-16 h-0.5 mx-4 transition-all duration-300",
-                    step > s.id ? "bg-blue-600" : "bg-gray-300"
+                    "w-16 h-0.5 mx-4 transition-all duration-300 rounded-full",
+                    step > s.id ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-800"
                   )}
                 />
               )}
@@ -486,7 +487,7 @@ export default function MultiStepForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>What describes you best?</FormLabel>
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {[
                           {
                             value: "student",
@@ -970,8 +971,9 @@ export default function MultiStepForm() {
                     <FormItem>
                       <FormLabel>Brief Bio (Optional)</FormLabel>
                       <FormControl>
-                        <Input
+                        <Textarea
                           placeholder="Tell us a bit about yourself..."
+                          rows={4}
                           {...field}
                         />
                       </FormControl>
@@ -991,7 +993,7 @@ export default function MultiStepForm() {
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between pt-4 border-t">
+            <div className="flex justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
               {step > 1 && (
                 <Button
                   type="button"
