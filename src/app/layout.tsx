@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UserProvider } from "@/components/providers/user-provider";
@@ -26,6 +27,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <UserProvider>{children}</UserProvider>
+            <SpeedInsights />
           </ThemeProvider>
         </body>
       </html>

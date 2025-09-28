@@ -18,6 +18,11 @@ export interface Profile {
   linkedin?: string;
   skills?: string;
   bio?: string;
+  years_of_experience?: number;
+  interests?: string[];
+  looking_for?: string[];
+  preferences?: Record<string, unknown> | null;
+  social?: Record<string, string> | null;
   onboarded: boolean;
   created_at: string;
   updated_at: string;
@@ -38,6 +43,10 @@ export interface OnboardingFormData {
   linkedin?: string;
   skills?: string;
   bio?: string;
+  yearsOfExperience?: number;
+  interests?: string[];
+  lookingFor?: string[];
+  preferences?: Record<string, unknown>;
 }
 
 export interface DashboardProps {

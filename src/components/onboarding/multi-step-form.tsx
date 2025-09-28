@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useMemo, useState } from "react";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useUser } from "@clerk/nextjs";
@@ -31,9 +31,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 
 const steps = [
-  { id: 1, label: "Role", icon: "🎯" },
-  { id: 2, label: "Details", icon: "📝" },
-  { id: 3, label: "Finish", icon: "🎉" },
+  { id: 1, label: "Account", icon: "👤" },
+  { id: 2, label: "Education/Work", icon: "🎓" },
+  { id: 3, label: "Interests", icon: "⭐" },
+  { id: 4, label: "Goals", icon: "🎯" },
+  { id: 5, label: "Socials", icon: "🔗" },
 ];
 
 // Predefined data for dropdowns
@@ -267,6 +269,34 @@ const GRADUATION_YEARS = Array.from({ length: 30 }, (_, i) =>
   (new Date().getFullYear() + 5 - i).toString()
 );
 
+const INTEREST_SUGGESTIONS = [
+  "AI/ML",
+  "Web Development",
+  "Mobile Apps",
+  "Cloud Computing",
+  "Cybersecurity",
+  "Data Science",
+  "Open Source",
+  "Entrepreneurship",
+  "Competitive Programming",
+  "Design/UI",
+  "Finance",
+  "Consulting",
+  "Marketing",
+  "Product Management",
+];
+
+const LOOKING_FOR_SUGGESTIONS = [
+  "Mentorship",
+  "Study Group",
+  "Internship",
+  "Full-time Role",
+  "Project Collaborators",
+  "Exam Prep Buddy",
+  "Mock Interviews",
+  "Resume Review",
+];
+
 // Enhanced validation schema matching API route
 const formSchema = z.object({
   role: z.enum(["student", "alumni", "aspirant"]),
@@ -283,7 +313,14 @@ const formSchema = z.object({
   linkedin: z.string().optional(),
   skills: z.string().optional(),
   bio: z.string().optional(),
+  yearsOfExperience: z
+    .preprocess((v) => (v === "" || v === null || v === undefined ? undefined : Number(v)), z.number().int().min(0).max(60))
+    .optional(),
+  interests: z.array(z.string()).optional(),
+  lookingFor: z.array(z.string()).optional(),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function MultiStepForm() {
   const [step, setStep] = useState(1);
@@ -293,8 +330,9 @@ export default function MultiStepForm() {
   const router = useRouter();
   const totalSteps = steps.length;
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const typedResolver = zodResolver(formSchema) as unknown as Resolver<FormValues>;
+  const form = useForm<FormValues>({
+    resolver: typedResolver,
     defaultValues: {
       role: "student",
       fullName: "",
@@ -310,7 +348,10 @@ export default function MultiStepForm() {
       linkedin: "",
       skills: "",
       bio: "",
-    },
+      yearsOfExperience: undefined,
+      interests: [],
+      lookingFor: [],
+    } as FormValues,
   });
 
   // Loading state
@@ -328,7 +369,7 @@ export default function MultiStepForm() {
     return null;
   }
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     setSubmitError("");
 
@@ -409,6 +450,10 @@ export default function MultiStepForm() {
         if (role === "aspirant") return ["entranceExam"];
         return [];
       case 3:
+        return [];
+      case 4:
+        return [];
+      case 5:
         return []; // Optional fields
       default:
         return [];
@@ -416,7 +461,7 @@ export default function MultiStepForm() {
   };
 
   return (
-    <Card className="w-full max-w-xl border border-gray-200/80 dark:border-gray-800/80 shadow-xl rounded-2xl bg-white/80 dark:bg-gray-950/70 backdrop-blur">
+  <Card className="w-full max-w-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xl rounded-2xl bg-white/80 dark:bg-gray-950/70 backdrop-blur">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl font-bold">
           Welcome to UniMinder!
@@ -478,7 +523,7 @@ export default function MultiStepForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* STEP 1: Role Selection & Basic Info */}
+            {/* STEP 1: Account (Role + Basics) */}
             {step === 1 && (
               <div className="space-y-4">
                 <FormField
@@ -567,7 +612,7 @@ export default function MultiStepForm() {
               </div>
             )}
 
-            {/* STEP 2: Role-specific details */}
+            {/* STEP 2: Education or Work details */}
             {step === 2 && (
               <div className="space-y-4">
                 {form.watch("role") === "student" && (
@@ -916,49 +961,81 @@ export default function MultiStepForm() {
               </div>
             )}
 
-            {/* STEP 3: Additional Information */}
+            {/* STEP 3: Interests */}
             {step === 3 && (
-              <div className="space-y-4">
-                <div className="text-center mb-4">
-                  <div className="text-4xl mb-2">🎉</div>
-                  <h3 className="font-semibold text-lg">Almost done!</h3>
-                  <p className="text-sm text-gray-600">
-                    Add some final details to complete your profile
-                  </p>
+              <div className="space-y-6">
+                <div>
+                  <FormLabel>Pick a few interests</FormLabel>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {INTEREST_SUGGESTIONS.map((i) => {
+                      const selected = (form.watch("interests") || []).includes(i);
+                      return (
+                        <button
+                          type="button"
+                          key={i}
+                          onClick={() => {
+                            const current = new Set(form.getValues("interests") || []);
+                            if (selected) current.delete(i);
+                            else current.add(i);
+                            form.setValue("interests", Array.from(current));
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full text-xs border",
+                            selected
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"
+                          )}
+                        >
+                          {i}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="linkedin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>LinkedIn Profile</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://linkedin.com/in/yourname"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <FormLabel>What are you looking for?</FormLabel>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {LOOKING_FOR_SUGGESTIONS.map((i) => {
+                      const selected = (form.watch("lookingFor") || []).includes(i);
+                      return (
+                        <button
+                          type="button"
+                          key={i}
+                          onClick={() => {
+                            const current = new Set(form.getValues("lookingFor") || []);
+                            if (selected) current.delete(i);
+                            else current.add(i);
+                            form.setValue("lookingFor", Array.from(current));
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full text-xs border",
+                            selected
+                              ? "bg-purple-600 text-white border-purple-600"
+                              : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"
+                          )}
+                        >
+                          {i}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
 
+            {/* STEP 4: Goals & Experience */}
+            {step === 4 && (
+              <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="skills"
+                  name="yearsOfExperience"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Skills & Interests</FormLabel>
+                      <FormLabel>Years of Experience</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="e.g., Programming, Design, Marketing"
-                          {...field}
-                        />
+                        <Input type="number" min={0} max={60} placeholder="0" {...field} />
                       </FormControl>
-                      <p className="text-xs text-gray-500">
-                        Separate with commas
-                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -971,11 +1048,39 @@ export default function MultiStepForm() {
                     <FormItem>
                       <FormLabel>Brief Bio (Optional)</FormLabel>
                       <FormControl>
-                        <Textarea
-                          placeholder="Tell us a bit about yourself..."
-                          rows={4}
-                          {...field}
-                        />
+                        <Textarea placeholder="Tell us a bit about yourself..." rows={4} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {/* STEP 5: Socials */}
+            {step === 5 && (
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="linkedin"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>LinkedIn Profile</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://linkedin.com/in/yourname" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="skills"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Skills (comma separated)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., JavaScript, Design, Marketing" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

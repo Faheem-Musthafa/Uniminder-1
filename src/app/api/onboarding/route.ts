@@ -20,6 +20,9 @@ interface OnboardingData {
   linkedin?: string;
   skills?: string;
   bio?: string;
+  yearsOfExperience?: number;
+  interests?: string[];
+  lookingFor?: string[];
 }
 
 export async function POST(req: Request) {
@@ -97,6 +100,12 @@ export async function POST(req: Request) {
       linkedin: data.linkedin || null,
       skills: data.skills || null,
       bio: data.bio || null,
+      years_of_experience:
+        typeof data.yearsOfExperience === "number"
+          ? data.yearsOfExperience
+          : null,
+      interests: Array.isArray(data.interests) ? data.interests : null,
+      looking_for: Array.isArray(data.lookingFor) ? data.lookingFor : null,
       onboarded: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
