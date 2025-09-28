@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -461,61 +461,44 @@ export default function MultiStepForm() {
   };
 
   return (
-  <Card className="w-full max-w-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xl rounded-2xl bg-white/80 dark:bg-gray-950/70 backdrop-blur">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl font-bold">
-          Welcome to UniMinder!
-        </CardTitle>
-        <p className="text-sm text-gray-600 mt-2">
-          Let&apos;s set up your profile to get started
-        </p>
-
-        {/* Visual Stepper */}
-        <div className="flex items-center justify-center mt-6 relative">
-          {steps.map((s, i) => (
-            <div key={s.id} className="flex items-center">
-              <div className="flex flex-col items-center">
-                <div
-                  className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center border font-semibold transition-all duration-300 shadow-sm",
-                    step >= s.id
-                      ? "bg-blue-600 text-white border-blue-600 shadow-lg scale-110"
-                      : step === s.id - 1
-                      ? "bg-blue-50 text-blue-600 border-blue-200"
-                      : "bg-white text-gray-400 border-gray-200 dark:bg-gray-900 dark:border-gray-800"
-                  )}
-                >
-                  {step > s.id ? (
-                    <CheckCircle className="w-5 h-5" />
-                  ) : (
-                    <span className="text-sm">{s.icon}</span>
-                  )}
-                </div>
-                <span
-                  className={cn(
-                    "mt-2 text-xs font-medium transition-colors duration-300",
-                    step >= s.id ? "text-blue-600" : "text-gray-400"
-                  )}
-                >
-                  {s.label}
-                </span>
-              </div>
-
-              {/* Connecting line */}
-              {i < steps.length - 1 && (
-                <div
-                  className={cn(
-                    "w-16 h-0.5 mx-4 transition-all duration-300 rounded-full",
-                    step > s.id ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-800"
-                  )}
-                />
-              )}
-            </div>
-          ))}
+    <Card className="w-full max-w-2xl rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xl bg-white/90 dark:bg-gray-950/70 backdrop-blur">
+      <CardHeader className="pb-4">
+        <div className="text-center">
+          <CardTitle className="text-2xl font-bold tracking-tight">
+            Welcome to UniMinder
+          </CardTitle>
+          <p className="text-sm text-gray-600 mt-1">
+            Let&apos;s set up your profile to get started
+          </p>
         </div>
 
-        <Progress value={(step / totalSteps) * 100} className="mt-6" />
-        <p className="text-xs text-gray-500 mt-2">
+        {/* Pill Stepper */}
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-5 gap-2">
+          {steps.map((s) => {
+            const state = step === s.id ? "active" : step > s.id ? "done" : "idle";
+            return (
+              <div
+                key={s.id}
+                aria-current={state === "active"}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-3 py-2 rounded-full text-xs font-medium border transition-all",
+                  state === "active" &&
+                    "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent shadow",
+                  state === "done" &&
+                    "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200/70 dark:border-blue-900",
+                  state === "idle" &&
+                    "bg-white dark:bg-gray-900 text-gray-500 border-gray-200 dark:border-gray-800"
+                )}
+              >
+                <span className="text-sm">{s.icon}</span>
+                <span className="truncate">{s.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <Progress value={(step / totalSteps) * 100} className="mt-4" />
+        <p className="text-xs text-gray-500 mt-1 text-center">
           Step {step} of {totalSteps}
         </p>
       </CardHeader>
@@ -553,7 +536,7 @@ export default function MultiStepForm() {
                             desc: "Planning to study",
                           },
                         ].map((option) => (
-                          <Button
+                           <Button
                             key={option.value}
                             type="button"
                             variant={
@@ -563,9 +546,10 @@ export default function MultiStepForm() {
                             }
                             onClick={() => field.onChange(option.value)}
                             className={cn(
-                              "flex flex-col h-auto p-4 text-left transition-all duration-200",
-                              field.value === option.value &&
-                                "ring-2 ring-blue-200"
+                              "flex flex-col h-auto p-4 text-left transition-all duration-200 border",
+                              field.value === option.value
+                                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent shadow"
+                                : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"
                             )}
                           >
                             <span className="font-semibold flex items-center gap-2">
@@ -980,10 +964,10 @@ export default function MultiStepForm() {
                             form.setValue("interests", Array.from(current));
                           }}
                           className={cn(
-                            "px-3 py-1.5 rounded-full text-xs border",
+                            "px-3 py-1.5 rounded-full text-xs border transition-colors",
                             selected
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"
+                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent shadow"
+                              : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-blue-300/70"
                           )}
                         >
                           {i}
@@ -1009,10 +993,10 @@ export default function MultiStepForm() {
                             form.setValue("lookingFor", Array.from(current));
                           }}
                           className={cn(
-                            "px-3 py-1.5 rounded-full text-xs border",
+                            "px-3 py-1.5 rounded-full text-xs border transition-colors",
                             selected
-                              ? "bg-purple-600 text-white border-purple-600"
-                              : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"
+                              ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-transparent shadow"
+                              : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-purple-300/70"
                           )}
                         >
                           {i}
@@ -1114,7 +1098,7 @@ export default function MultiStepForm() {
                   type="button"
                   onClick={nextStep}
                   disabled={isSubmitting}
-                  className="ml-auto"
+                  className="ml-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
                 >
                   Continue
                 </Button>
@@ -1123,7 +1107,7 @@ export default function MultiStepForm() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="ml-auto"
+                  className="ml-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
                 >
                   {isSubmitting ? (
                     <>
