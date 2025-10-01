@@ -1,3 +1,5 @@
-export function Alumni() {
-  return <div>Alumni Dashboard</div>;
+import { DashboardProps } from "@/types";
+
+export default function AlumniDashboard({ profile }: DashboardProps) {
+  return <div>Alumni Dashboard {profile.full_name}</div>;
 }
