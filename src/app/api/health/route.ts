@@ -33,7 +33,7 @@ export async function GET() {
         !!process.env.SUPABASE_URL || !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       hasSupabaseKey:
         !!process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        !!process.env.NEXT_PUBLIC_SUPABASE_KEY,
+        !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     };
 
     console.log("✅ Database connection successful");

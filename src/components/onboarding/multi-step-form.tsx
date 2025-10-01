@@ -1,22 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useForm, type Resolver } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useUser } from "@clerk/nextjs";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { useUser } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -25,1107 +14,560 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, CheckCircle2 } from "lucide-react";
 
-const steps = [
-  { id: 1, label: "Account", icon: "👤" },
-  { id: 2, label: "Education/Work", icon: "🎓" },
-  { id: 3, label: "Interests", icon: "⭐" },
-  { id: 4, label: "Goals", icon: "🎯" },
-  { id: 5, label: "Socials", icon: "🔗" },
-];
+type Role = "student" | "alumni" | "aspirant";
 
-// Predefined data for dropdowns
-const DEGREE_TYPES = [
-  "Bachelor's Degree",
-  "Master's Degree",
-  "Doctoral Degree (PhD)",
-  "Associate Degree",
-  "Professional Degree",
-  "Diploma/Certificate",
-  "High School",
-  "Other",
-];
+interface FormData {
+  role: Role | "";
+  fullName: string;
+  email: string;
+  location: string;
+  college: string;
+  degree: string;
+  branch: string;
+  passingYear: string;
+  company: string;
+  designation: string;
+  entranceExam: string;
+  targetCollege: string;
+  linkedin: string;
+  skills: string;
+  bio: string;
+  yearsOfExperience: number;
+  interests: string[];
+  lookingFor: string[];
+}
 
-const MAJORS_BRANCHES = [
-  // Engineering
-  "Computer Science & Engineering",
-  "Information Technology",
-  "Electronics & Communication Engineering",
-  "Mechanical Engineering",
-  "Civil Engineering",
-  "Electrical Engineering",
-  "Chemical Engineering",
-  "Aerospace Engineering",
-  "Biomedical Engineering",
-  "Industrial Engineering",
-
-  // Business & Management
-  "Business Administration (MBA/BBA)",
-  "Finance",
-  "Marketing",
-  "Human Resources",
-  "Operations Management",
-  "International Business",
-
-  // Sciences
-  "Computer Science",
-  "Data Science",
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "Biotechnology",
-  "Environmental Science",
-
-  // Liberal Arts & Others
-  "Economics",
-  "Psychology",
-  "Sociology",
-  "Political Science",
-  "Literature",
-  "History",
-  "Philosophy",
-  "Design",
-  "Arts",
-  "Media & Communication",
-  "Law",
-  "Medicine",
-  "Nursing",
-  "Education",
-  "Other",
-];
-
-const ENTRANCE_EXAMS = [
-  // Indian Engineering
-  "JEE Main",
-  "JEE Advanced",
-  "BITSAT",
-  "VITEEE",
-  "SRMJEEE",
-  "MET",
-
-  // Indian Management
-  "CAT",
-  "XAT",
-  "SNAP",
-  "NMAT",
-  "MAT",
-  "CMAT",
-
-  // Indian Medical
-  "NEET UG",
-  "NEET PG",
-  "AIIMS",
-
-  // International
-  "SAT",
-  "ACT",
-  "GRE",
-  "GMAT",
-  "TOEFL",
-  "IELTS",
-
-  // Other Government Exams
-  "UPSC",
-  "SSC",
-  "Bank PO",
-  "GATE",
-  "NET/JRF",
-
-  "Other",
-];
-
-const POPULAR_COMPANIES = [
-  // Tech Giants
-  "Google",
-  "Microsoft",
-  "Apple",
-  "Amazon",
-  "Meta (Facebook)",
-  "Netflix",
-  "Tesla",
-  "Uber",
-  "Airbnb",
-  "Spotify",
-
-  // Indian IT
-  "Tata Consultancy Services (TCS)",
-  "Infosys",
-  "Wipro",
-  "HCL Technologies",
-  "Tech Mahindra",
-  "Capgemini",
-  "Accenture",
-  "IBM",
-  "Cognizant",
-  "Mindtree",
-
-  // Consulting & Finance
-  "McKinsey & Company",
-  "Boston Consulting Group",
-  "Deloitte",
-  "PwC",
-  "EY",
-  "KPMG",
-  "Goldman Sachs",
-  "Morgan Stanley",
-  "JP Morgan",
-  "Citibank",
-
-  // Startups & Unicorns
-  "Flipkart",
-  "Paytm",
-  "Zomato",
-  "Swiggy",
-  "Ola",
-  "PhonePe",
-  "Razorpay",
-  "CRED",
-  "Dream11",
-  "Unacademy",
-
-  // Traditional Industries
-  "Reliance Industries",
-  "Tata Group",
-  "Aditya Birla Group",
-  "L&T",
-  "Mahindra Group",
-  "ITC",
-  "HDFC Bank",
-  "ICICI Bank",
-
-  "Other",
-];
-
-const JOB_DESIGNATIONS = [
-  // Software Development
-  "Software Engineer",
-  "Senior Software Engineer",
-  "Lead Developer",
-  "Full Stack Developer",
-  "Frontend Developer",
-  "Backend Developer",
-  "DevOps Engineer",
-  "Site Reliability Engineer",
-  "Technical Architect",
-
-  // Data & Analytics
-  "Data Scientist",
-  "Data Analyst",
-  "Machine Learning Engineer",
-  "AI Engineer",
-  "Business Analyst",
-  "Product Analyst",
-
-  // Product & Design
-  "Product Manager",
-  "Senior Product Manager",
-  "Product Owner",
-  "UX Designer",
-  "UI Designer",
-  "Product Designer",
-
-  // Management & Leadership
-  "Team Lead",
-  "Engineering Manager",
-  "Project Manager",
-  "Director",
-  "Vice President",
-  "CTO",
-  "CEO",
-
-  // Consulting & Finance
-  "Consultant",
-  "Senior Consultant",
-  "Manager",
-  "Associate",
-  "Financial Analyst",
-  "Investment Banker",
-  "Risk Analyst",
-
-  // Marketing & Sales
-  "Marketing Manager",
-  "Digital Marketing Specialist",
-  "Sales Executive",
-  "Business Development Manager",
-  "Growth Manager",
-
-  // Other
-  "Research Scientist",
-  "Quality Assurance Engineer",
-  "Technical Writer",
-  "Customer Success Manager",
-  "Operations Manager",
-  "HR Manager",
-
-  "Other",
-];
-
-const GRADUATION_YEARS = Array.from({ length: 30 }, (_, i) =>
-  (new Date().getFullYear() + 5 - i).toString()
-);
-
-const INTEREST_SUGGESTIONS = [
-  "AI/ML",
-  "Web Development",
-  "Mobile Apps",
-  "Cloud Computing",
-  "Cybersecurity",
-  "Data Science",
-  "Open Source",
-  "Entrepreneurship",
-  "Competitive Programming",
-  "Design/UI",
-  "Finance",
-  "Consulting",
-  "Marketing",
-  "Product Management",
-];
-
-const LOOKING_FOR_SUGGESTIONS = [
-  "Mentorship",
-  "Study Group",
-  "Internship",
-  "Full-time Role",
-  "Project Collaborators",
-  "Exam Prep Buddy",
-  "Mock Interviews",
-  "Resume Review",
-];
-
-// Enhanced validation schema matching API route
-const formSchema = z.object({
-  role: z.enum(["student", "alumni", "aspirant"]),
-  fullName: z.string().min(2, "Full name is required"),
-  location: z.string().optional(),
-  college: z.string().optional(),
-  degree: z.string().optional(),
-  branch: z.string().optional(),
-  passingYear: z.string().optional(),
-  company: z.string().optional(),
-  designation: z.string().optional(),
-  entranceExam: z.string().optional(),
-  targetCollege: z.string().optional(),
-  linkedin: z.string().optional(),
-  skills: z.string().optional(),
-  bio: z.string().optional(),
-  yearsOfExperience: z
-    .preprocess((v) => (v === "" || v === null || v === undefined ? undefined : Number(v)), z.number().int().min(0).max(60))
-    .optional(),
-  interests: z.array(z.string()).optional(),
-  lookingFor: z.array(z.string()).optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+const initialFormData: FormData = {
+  role: "",
+  fullName: "",
+  email: "",
+  location: "",
+  college: "",
+  degree: "",
+  branch: "",
+  passingYear: "",
+  company: "",
+  designation: "",
+  entranceExam: "",
+  targetCollege: "",
+  linkedin: "",
+  skills: "",
+  bio: "",
+  yearsOfExperience: 0,
+  interests: [],
+  lookingFor: [],
+};
 
 export default function MultiStepForm() {
-  const [step, setStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-  const { user, isLoaded } = useUser();
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const router = useRouter();
-  const totalSteps = steps.length;
+  const { user, isLoaded } = useUser();
 
-  const typedResolver = zodResolver(formSchema) as unknown as Resolver<FormValues>;
-  const form = useForm<FormValues>({
-    resolver: typedResolver,
-    defaultValues: {
-      role: "student",
-      fullName: "",
-      location: "",
-      college: "",
-      degree: "",
-      branch: "",
-      passingYear: "",
-      company: "",
-      designation: "",
-      entranceExam: "",
-      targetCollege: "",
-      linkedin: "",
-      skills: "",
-      bio: "",
-      yearsOfExperience: undefined,
-      interests: [],
-      lookingFor: [],
-    } as FormValues,
-  });
+  // Auto-fill user data
+  useEffect(() => {
+    if (isLoaded && user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: user.fullName || "",
+        email: user.primaryEmailAddress?.emailAddress || "",
+      }));
+    }
+  }, [isLoaded, user]);
 
-  // Loading state
-  if (!isLoaded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  // Calculate progress
+  const totalSteps = formData.role === "student" ? 3 : formData.role === "alumni" ? 4 : formData.role === "aspirant" ? 4 : 1;
+  const progress = (currentStep / totalSteps) * 100;
 
-  // Redirect if not authenticated
-  if (!user) {
-    router.push("/sign-in");
-    return null;
-  }
+  // Update form field
+  const updateField = (field: keyof FormData, value: FormData[keyof FormData]) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
 
-  const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
-    setSubmitError("");
-
+  // Auto-save progress
+  const autoSave = async () => {
+    if (!formData.role || saveStatus === "saving") return;
+    
     try {
-      const payload = {
-        ...values,
-        userId: user.id,
-        email: user.emailAddresses[0]?.emailAddress,
-      };
+      setSaveStatus("saving");
+      await fetch("/api/onboarding/save", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch {
+      setSaveStatus("idle");
+    }
+  };
 
-      console.log("🚀 Submitting onboarding data:", payload);
+  // Debounced auto-save
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentStep > 1) autoSave();
+    }, 2000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, currentStep]);
 
+  // Validate current step
+  const validateStep = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (currentStep === 1) {
+      if (!formData.role) newErrors.role = "Please select a role";
+    }
+
+    if (currentStep === 2) {
+      if (!formData.fullName.trim()) newErrors.fullName = "Name is required";
+      
+      if (formData.role === "student" || formData.role === "alumni") {
+        if (!formData.college.trim()) newErrors.college = "College is required";
+        if (!formData.passingYear.trim()) newErrors.passingYear = "Year is required";
+      }
+      
+      if (formData.role === "aspirant") {
+        if (!formData.entranceExam.trim()) newErrors.entranceExam = "Entrance exam is required";
+      }
+    }
+
+    if (currentStep === 3 && formData.role === "alumni") {
+      if (!formData.company.trim()) newErrors.company = "Company is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Navigate steps
+  const nextStep = () => {
+    if (validateStep()) {
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+    }
+  };
+
+  const prevStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  // Submit form
+  const handleSubmit = async () => {
+    if (!validateStep()) return;
+
+    setIsSubmitting(true);
+    try {
       const response = await fetch("/api/onboarding", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
 
       const result = await response.json();
-      console.log("📬 API Response:", { status: response.status, result });
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to save profile");
+      if (response.ok) {
+        router.push("/dashboard");
+      } else {
+        setErrors({ submit: result.error || "Failed to save profile" });
       }
-
-      console.log("✅ Profile saved successfully!");
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("❌ Onboarding error:", error);
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : "Failed to save profile. Please try again."
-      );
+    } catch {
+      setErrors({ submit: "Network error. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Enhanced form validation before step navigation
-  const nextStep = async () => {
-    const fieldsToValidate = getFieldsForStep(step);
-    const isValid = await form.trigger(fieldsToValidate);
+  // Render role selection
+  const renderRoleSelection = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Choose Your Role
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Select the option that best describes you
+        </p>
+      </div>
 
-    if (isValid) {
-      setStep((prev) => Math.min(prev + 1, totalSteps));
-      setSubmitError(""); // Clear any previous errors
-    }
-  };
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          {
+            role: "student" as Role,
+            icon: "🎓",
+            title: "Student",
+            description: "Currently pursuing a degree",
+          },
+          {
+            role: "alumni" as Role,
+            icon: "💼",
+            title: "Alumni",
+            description: "Graduated and working professional",
+          },
+          {
+            role: "aspirant" as Role,
+            icon: "🎯",
+            title: "Aspirant",
+            description: "Preparing for entrance exams",
+          },
+        ].map((option) => (
+          <Card
+            key={option.role}
+            className={`cursor-pointer transition-all hover:shadow-lg ${
+              formData.role === option.role
+                ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "hover:ring-2 hover:ring-gray-300"
+            }`}
+            onClick={() => updateField("role", option.role)}
+          >
+            <CardContent className="p-6 text-center">
+              <div className="text-4xl mb-3">{option.icon}</div>
+              <h3 className="font-semibold text-lg mb-2">{option.title}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {option.description}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-  const prevStep = () => {
-    setStep((prev) => Math.max(prev - 1, 1));
-    setSubmitError(""); // Clear errors when going back
-  };
+      {errors.role && (
+        <p className="text-red-500 text-sm text-center">{errors.role}</p>
+      )}
+    </div>
+  );
 
-  // Helper function to validate specific fields per step
-  const getFieldsForStep = (
-    currentStep: number
-  ): (keyof z.infer<typeof formSchema>)[] => {
-    switch (currentStep) {
-      case 1:
-        return ["role", "fullName"];
-      case 2:
-        const role = form.watch("role");
-        if (role === "student")
-          return ["college", "degree", "branch", "passingYear"];
-        if (role === "alumni")
-          return [
-            "college",
-            "degree",
-            "branch",
-            "passingYear",
-            "company",
-            "designation",
-          ];
-        if (role === "aspirant") return ["entranceExam"];
-        return [];
-      case 3:
-        return [];
-      case 4:
-        return [];
-      case 5:
-        return []; // Optional fields
-      default:
-        return [];
-    }
+  // Render basic info
+  const renderBasicInfo = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Basic Information
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Tell us about yourself
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="fullName">Full Name *</Label>
+          <Input
+            id="fullName"
+            value={formData.fullName}
+            onChange={(e) => updateField("fullName", e.target.value)}
+            placeholder="Full-Name"
+            className={errors.fullName ? "border-red-500" : ""}
+          />
+          {errors.fullName && (
+            <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => updateField("email", e.target.value)}
+            placeholder="your-email@example.com"
+            disabled
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="location">Location</Label>
+          <Input
+            id="location"
+            value={formData.location}
+            onChange={(e) => updateField("location", e.target.value)}
+            placeholder="New York, USA"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="linkedin">LinkedIn Profile</Label>
+          <Input
+            id="linkedin"
+            value={formData.linkedin}
+            onChange={(e) => updateField("linkedin", e.target.value)}
+            placeholder="https://linkedin.com/in/johndoe"
+          />
+        </div>
+      </div>
+
+      {(formData.role === "student" || formData.role === "alumni") && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="college">College/University *</Label>
+              <Input
+                id="college"
+                value={formData.college}
+                onChange={(e) => updateField("college", e.target.value)}
+                placeholder="Calicut University"
+                className={errors.college ? "border-red-500" : ""}
+              />
+              {errors.college && (
+                <p className="text-red-500 text-sm mt-1">{errors.college}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="degree">Degree</Label>
+              <Select
+                value={formData.degree}
+                onValueChange={(value) => updateField("degree", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select degree" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Bachelor's">Bachelor&apos;s</SelectItem>
+                  <SelectItem value="Master's">Master&apos;s</SelectItem>
+                  <SelectItem value="PhD">PhD</SelectItem>
+                  <SelectItem value="Diploma">Diploma</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="branch">Branch/Major</Label>
+              <Input
+                id="branch"
+                value={formData.branch}
+                onChange={(e) => updateField("branch", e.target.value)}
+                placeholder="Computer Science"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="passingYear">
+                {formData.role === "student" ? "Expected Graduation Year" : "Passing Year"} *
+              </Label>
+              <Input
+                id="passingYear"
+                value={formData.passingYear}
+                onChange={(e) => updateField("passingYear", e.target.value)}
+                placeholder="2025"
+                className={errors.passingYear ? "border-red-500" : ""}
+              />
+              {errors.passingYear && (
+                <p className="text-red-500 text-sm mt-1">{errors.passingYear}</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {formData.role === "aspirant" && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="entranceExam">Target Entrance Exam *</Label>
+              <Input
+                id="entranceExam"
+                value={formData.entranceExam}
+                onChange={(e) => updateField("entranceExam", e.target.value)}
+                placeholder="JEE, NEET, CAT, etc."
+                className={errors.entranceExam ? "border-red-500" : ""}
+              />
+              {errors.entranceExam && (
+                <p className="text-red-500 text-sm mt-1">{errors.entranceExam}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="targetCollege">Target College</Label>
+              <Input
+                id="targetCollege"
+                value={formData.targetCollege}
+                onChange={(e) => updateField("targetCollege", e.target.value)}
+                placeholder="IIT Bombay, AIIMS, etc."
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  // Render professional info (alumni only)
+  const renderProfessionalInfo = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Professional Details
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Share your work experience
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="company">Current Company *</Label>
+          <Input
+            id="company"
+            value={formData.company}
+            onChange={(e) => updateField("company", e.target.value)}
+            placeholder="Google"
+            className={errors.company ? "border-red-500" : ""}
+          />
+          {errors.company && (
+            <p className="text-red-500 text-sm mt-1">{errors.company}</p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="designation">Job Title</Label>
+          <Input
+            id="designation"
+            value={formData.designation}
+            onChange={(e) => updateField("designation", e.target.value)}
+            placeholder="Software Engineer"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="yearsOfExperience">Years of Experience</Label>
+          <Input
+            id="yearsOfExperience"
+            type="number"
+            min="0"
+            value={formData.yearsOfExperience || ""}
+            onChange={(e) => updateField("yearsOfExperience", parseInt(e.target.value) || 0)}
+            placeholder="3"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render additional info
+  const renderAdditionalInfo = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Almost Done!
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Just a few more details
+        </p>
+      </div>
+
+      <div>
+        <Label htmlFor="skills">Skills & Interests</Label>
+        <Input
+          id="skills"
+          value={formData.skills}
+          onChange={(e) => updateField("skills", e.target.value)}
+          placeholder="Programming, Design, Public Speaking"
+        />
+        <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+      </div>
+
+      <div>
+        <Label htmlFor="bio">Brief Bio</Label>
+        <Textarea
+          id="bio"
+          value={formData.bio}
+          onChange={(e) => updateField("bio", e.target.value)}
+          placeholder="Tell us about yourself, your goals, and what you're looking for..."
+          rows={4}
+        />
+      </div>
+    </div>
+  );
+
+  // Render current step
+  const renderStep = () => {
+    if (currentStep === 1) return renderRoleSelection();
+    if (currentStep === 2) return renderBasicInfo();
+    if (currentStep === 3 && formData.role === "alumni") return renderProfessionalInfo();
+    return renderAdditionalInfo();
   };
 
   return (
-    <Card className="w-full max-w-2xl rounded-2xl border border-gray-200/80 dark:border-gray-800/80 shadow-xl bg-white/90 dark:bg-gray-950/70 backdrop-blur">
-      <CardHeader className="pb-4">
-        <div className="text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Welcome to UniMinder
-          </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
-            Let&apos;s set up your profile to get started
-          </p>
-        </div>
-
-        {/* Pill Stepper */}
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-5 gap-2">
-          {steps.map((s) => {
-            const state = step === s.id ? "active" : step > s.id ? "done" : "idle";
-            return (
-              <div
-                key={s.id}
-                aria-current={state === "active"}
-                className={cn(
-                  "flex items-center justify-center gap-2 px-3 py-2 rounded-full text-xs font-medium border transition-all",
-                  state === "active" &&
-                    "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent shadow",
-                  state === "done" &&
-                    "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200/70 dark:border-blue-900",
-                  state === "idle" &&
-                    "bg-white dark:bg-gray-900 text-gray-500 border-gray-200 dark:border-gray-800"
-                )}
-              >
-                <span className="text-sm">{s.icon}</span>
-                <span className="truncate">{s.label}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        <Progress value={(step / totalSteps) * 100} className="mt-4" />
-        <p className="text-xs text-gray-500 mt-1 text-center">
-          Step {step} of {totalSteps}
-        </p>
-      </CardHeader>
-
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* STEP 1: Account (Role + Basics) */}
-            {step === 1 && (
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>What describes you best?</FormLabel>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {[
-                          {
-                            value: "student",
-                            icon: "🎓",
-                            label: "Student",
-                            desc: "Currently studying",
-                          },
-                          {
-                            value: "alumni",
-                            icon: "💼",
-                            label: "Alumni",
-                            desc: "Graduated & working",
-                          },
-                          {
-                            value: "aspirant",
-                            icon: "🎯",
-                            label: "Aspirant",
-                            desc: "Planning to study",
-                          },
-                        ].map((option) => (
-                           <Button
-                            key={option.value}
-                            type="button"
-                            variant={
-                              field.value === option.value
-                                ? "default"
-                                : "outline"
-                            }
-                            onClick={() => field.onChange(option.value)}
-                            className={cn(
-                              "flex flex-col h-auto p-4 text-left transition-all duration-200 border",
-                              field.value === option.value
-                                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent shadow"
-                                : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"
-                            )}
-                          >
-                            <span className="font-semibold flex items-center gap-2">
-                              {option.icon} {option.label}
-                            </span>
-                            <span className="text-xs opacity-75">
-                              {option.desc}
-                            </span>
-                          </Button>
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="fullName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your full name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Location</FormLabel>
-                      <FormControl>
-                        <Input placeholder="City, State/Country" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {/* STEP 2: Education or Work details */}
-            {step === 2 && (
-              <div className="space-y-4">
-                {form.watch("role") === "student" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="college"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>University/College *</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Your university name"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="degree"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Degree Type *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select your degree type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {DEGREE_TYPES.map((degree) => (
-                                <SelectItem key={degree} value={degree}>
-                                  {degree}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="branch"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Branch/Major *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select your field of study" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {MAJORS_BRANCHES.map((major) => (
-                                <SelectItem key={major} value={major}>
-                                  {major}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="passingYear"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Expected Graduation Year *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select graduation year" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {GRADUATION_YEARS.map((year) => (
-                                <SelectItem key={year} value={year}>
-                                  {year}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-
-                {form.watch("role") === "alumni" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="college"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Alma Mater *</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Where you graduated from"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="degree"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Degree Type *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select your degree type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {DEGREE_TYPES.map((degree) => (
-                                <SelectItem key={degree} value={degree}>
-                                  {degree}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="branch"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Field of Study *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select your major" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {MAJORS_BRANCHES.map((major) => (
-                                <SelectItem key={major} value={major}>
-                                  {major}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="passingYear"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Graduation Year *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select graduation year" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {GRADUATION_YEARS.map((year) => (
-                                <SelectItem key={year} value={year}>
-                                  {year}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="company"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Current Company *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select or type your company" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {POPULAR_COMPANIES.map((company) => (
-                                <SelectItem key={company} value={company}>
-                                  {company}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <div className="mt-2">
-                            <Input
-                              placeholder="Or type your company name"
-                              value={
-                                field.value === "Other" ? "" : field.value || ""
-                              }
-                              onChange={(e) => field.onChange(e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="designation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Job Title *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select your role" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {JOB_DESIGNATIONS.map((role) => (
-                                <SelectItem key={role} value={role}>
-                                  {role}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <div className="mt-2">
-                            <Input
-                              placeholder="Or type your job title"
-                              value={
-                                field.value === "Other" ? "" : field.value || ""
-                              }
-                              onChange={(e) => field.onChange(e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-
-                {form.watch("role") === "aspirant" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="entranceExam"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Target Entrance Exam *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select your target exam" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {ENTRANCE_EXAMS.map((exam) => (
-                                <SelectItem key={exam} value={exam}>
-                                  {exam}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <div className="mt-2">
-                            <Input
-                              placeholder="Or type your target exam"
-                              value={
-                                field.value === "Other" ? "" : field.value || ""
-                              }
-                              onChange={(e) => field.onChange(e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="targetCollege"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Dream College/University</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Where you want to study"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* STEP 3: Interests */}
-            {step === 3 && (
-              <div className="space-y-6">
-                <div>
-                  <FormLabel>Pick a few interests</FormLabel>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {INTEREST_SUGGESTIONS.map((i) => {
-                      const selected = (form.watch("interests") || []).includes(i);
-                      return (
-                        <button
-                          type="button"
-                          key={i}
-                          onClick={() => {
-                            const current = new Set(form.getValues("interests") || []);
-                            if (selected) current.delete(i);
-                            else current.add(i);
-                            form.setValue("interests", Array.from(current));
-                          }}
-                          className={cn(
-                            "px-3 py-1.5 rounded-full text-xs border transition-colors",
-                            selected
-                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent shadow"
-                              : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-blue-300/70"
-                          )}
-                        >
-                          {i}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <FormLabel>What are you looking for?</FormLabel>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {LOOKING_FOR_SUGGESTIONS.map((i) => {
-                      const selected = (form.watch("lookingFor") || []).includes(i);
-                      return (
-                        <button
-                          type="button"
-                          key={i}
-                          onClick={() => {
-                            const current = new Set(form.getValues("lookingFor") || []);
-                            if (selected) current.delete(i);
-                            else current.add(i);
-                            form.setValue("lookingFor", Array.from(current));
-                          }}
-                          className={cn(
-                            "px-3 py-1.5 rounded-full text-xs border transition-colors",
-                            selected
-                              ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-transparent shadow"
-                              : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-purple-300/70"
-                          )}
-                        >
-                          {i}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: Goals & Experience */}
-            {step === 4 && (
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="yearsOfExperience"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Years of Experience</FormLabel>
-                      <FormControl>
-                        <Input type="number" min={0} max={60} placeholder="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="bio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Brief Bio (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Tell us a bit about yourself..." rows={4} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {/* STEP 5: Socials */}
-            {step === 5 && (
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="linkedin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>LinkedIn Profile</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://linkedin.com/in/yourname" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="skills"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Skills (comma separated)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., JavaScript, Design, Marketing" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {/* Error Message */}
-            {submitError && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
-                <AlertCircle className="h-4 w-4 text-red-500" />
-                <p className="text-sm text-red-700">{submitError}</p>
-              </div>
-            )}
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
-              {step > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={isSubmitting}
-                >
-                  Back
-                </Button>
+    <div className="w-full">
+      <Card className="shadow-xl border-gray-200 dark:border-gray-800">
+        <CardContent className="p-6 md:p-8">
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Step {currentStep} of {totalSteps}
+              </span>
+              {saveStatus === "saved" && (
+                <span className="text-sm text-green-600 flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Saved
+                </span>
               )}
-              {step < totalSteps && (
-                <Button
-                  type="button"
-                  onClick={nextStep}
-                  disabled={isSubmitting}
-                  className="ml-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
-                >
-                  Continue
-                </Button>
-              )}
-              {step === totalSteps && (
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="ml-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Profile...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Complete Setup
-                    </>
-                  )}
-                </Button>
+              {saveStatus === "saving" && (
+                <span className="text-sm text-gray-500 flex items-center gap-1">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </span>
               )}
             </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+            <Progress value={progress} className="h-2" />
+          </div>
+
+          {/* Form Content */}
+          <div className="min-h-[400px]">{renderStep()}</div>
+
+          {/* Error Message */}
+          {errors.submit && (
+            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-red-600 dark:text-red-400 text-sm">{errors.submit}</p>
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 1 || isSubmitting}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back
+            </Button>
+
+            {currentStep < totalSteps ? (
+              <Button onClick={nextStep} className="flex items-center gap-2">
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="flex items-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Complete Setup"
+                )}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

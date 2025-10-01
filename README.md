@@ -1,3 +1,28 @@
+# UniMinder
+
+Modern mentorship & career guidance platform with role-based dashboards.
+
+## Onboarding System
+
+Modern side-navigation onboarding flow with APIs and DB alignment.
+
+### Endpoints
+
+- `GET /api/onboarding/status` — check profile existence and onboarded flag
+- `PATCH /api/onboarding/save` — partial updates during the wizard
+- `POST /api/onboarding` — final submit, sets `onboarded = true`
+
+### Database
+
+Run SQL migrations in `db/` (Supabase SQL):
+
+- `update_profiles.sql`
+- `2025-09-28_add_onboarding_fields.sql`
+
+### Middleware
+
+Redirects users hitting `/dashboard` to `/onboarding` until `profiles.onboarded = true`.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

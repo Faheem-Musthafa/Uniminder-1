@@ -42,9 +42,12 @@ export async function POST(req: Request) {
     console.log("🟢 Trying to insert:", { id, first_name, last_name });
 
     const { error } = await supabase.from("profiles").insert({
+      id, // use Clerk user id as PK
       user_id: id,
-      name: `${first_name ?? ""} ${last_name ?? ""}`,
+      full_name: `${first_name ?? ""} ${last_name ?? ""}`.trim() || null,
       onboarded: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
 
     if (error) {

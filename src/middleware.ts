@@ -16,11 +16,11 @@ export default clerkMiddleware(async (auth, req) => {
         const supabase = createEdgeSupabaseClient();
         const { data: profile } = await supabase
           .from("profiles")
-          .select("id")
+          .select("id,onboarded")
           .eq("id", userId)
           .single();
 
-        if (!profile) {
+        if (!profile || profile.onboarded === false) {
           // User not onboarded → redirect to onboarding
           return Response.redirect(new URL("/onboarding", req.url));
         }
