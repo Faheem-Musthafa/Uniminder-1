@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
-import AspirantsDashboard from "@/components/dashboard/aspirant";
+import { Aspirant } from "@/components/dashboard/aspirant";
 
 const supabase = getSupabase();
 
@@ -23,5 +23,5 @@ export default async function AspirantDashboardPage() {
     redirect("/dashboard");
   }
 
-  return <AspirantsDashboard profile={profile} />;
+  return <Aspirant profile={profile} />;
 }
