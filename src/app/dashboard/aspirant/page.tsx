@@ -1,10 +1,10 @@
-import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
+import AspirantDashboard from "@/components/dashboard/aspirant";
 import { AppSidebar } from "@/components/app-sidebar";
-import Alumni from "@/components/dashboard/alumni";
 
-export default async function AlumniDashboardPage() {
+export default async function AspirantDashboardPage() {
   const user = await currentUser();
 
   if (!user) {
@@ -24,13 +24,13 @@ export default async function AlumniDashboardPage() {
     redirect("/onboarding");
   }
 
-  // Redirect non-alumni to their appropriate dashboard
-  if (profile.role !== "alumni") {
+  // Redirect non-aspirants to their appropriate dashboard
+  if (profile.role !== "aspirant") {
     const dashboardPath =
-      profile.role === "student"
+      profile.role === "alumni"
+        ? "/dashboard/alumni"
+        : profile.role === "student"
         ? "/dashboard/student"
-        : profile.role === "aspirant"
-        ? "/dashboard/aspirant"
         : "/dashboard";
     redirect(dashboardPath);
   }
@@ -39,7 +39,7 @@ export default async function AlumniDashboardPage() {
     <div className="flex h-screen bg-gray-50">
       <AppSidebar profile={profile} />
       <div className="flex-1 overflow-hidden">
-        <Alumni profile={profile} />
+        <AspirantDashboard profile={profile} />
       </div>
     </div>
   );
