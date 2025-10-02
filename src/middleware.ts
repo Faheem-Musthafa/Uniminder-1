@@ -3,7 +3,7 @@ import { createEdgeSupabaseClient } from "@/lib/supabase-edge";
 
 // DEVELOPMENT MODE: Temporarily disable dashboard protection
 const isProtectedRoute = createRouteMatcher([
-  // "/dashboard(.*)",  // Commented out for development
+  "/dashboard(.*)", // Commented out for development
   "/onboarding(.*)",
 ]);
 
