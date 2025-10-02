@@ -4,7 +4,7 @@ import { useState, useCallback, memo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@clerk/nextjs";
-import { ModeToggle } from "./DrakModeToggle";
+import { SafeModeToggle } from "./safe-mode-toggle";
 import { useAppUser } from "./providers/user-provider";
 
 // Memoize the hamburger icon to prevent unnecessary re-renders
@@ -131,7 +131,7 @@ export default function NavBar() {
           <Link href="#faqs">
             <Button variant="link">FAQs</Button>
           </Link>
-          <ModeToggle />
+          <SafeModeToggle />
         </nav>
 
         {/* Desktop auth buttons */}
