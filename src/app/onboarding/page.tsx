@@ -14,10 +14,10 @@ export default function OnboardingPage() {
               <div className="absolute -bottom-24 -left-24 h-64 w-64 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-3xl" />
 
               <div className="relative">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">
                   Welcome to UniMinder
                 </h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                <p className="mt-2 text-muted-foreground">
                   A community to guide your academic and career journey.
                 </p>
 
@@ -37,14 +37,14 @@ export default function OnboardingPage() {
                     },
                   ].map((item) => (
                     <li key={item.title} className="flex items-start gap-3">
-                      <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-xs font-bold">
+                      <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
                         ✓
                       </span>
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-gray-100">
+                        <p className="font-medium text-foreground">
                           {item.title}
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-muted-foreground">
                           {item.desc}
                         </p>
                       </div>

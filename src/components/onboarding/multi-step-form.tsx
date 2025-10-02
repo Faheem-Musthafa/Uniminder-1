@@ -456,10 +456,10 @@ export default function MultiStepForm() {
   const renderAdditionalInfo = () => (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-2xl font-bold text-foreground">
           Almost Done!
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <p className="text-muted-foreground mt-2">
           Just a few more details
         </p>
       </div>
@@ -472,7 +472,7 @@ export default function MultiStepForm() {
           onChange={(e) => updateField("skills", e.target.value)}
           placeholder="Programming, Design, Public Speaking"
         />
-        <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+        <p className="text-xs text-muted-foreground mt-1">Separate with commas</p>
       </div>
 
       <div>

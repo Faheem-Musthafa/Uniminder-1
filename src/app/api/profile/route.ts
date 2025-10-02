@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { rateLimiter } from "@/lib/rate-limit";
 import { handleApiError } from "@/lib/errors";
+
+const supabase = getSupabase();
 
 export async function GET() {
   try {
@@ -23,7 +25,19 @@ export async function GET() {
       );
     }
 
-    const profile = await db.profiles.findById(userId);
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      console.error("Profile fetch error:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch profile" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -63,10 +77,20 @@ export async function PUT(req: Request) {
 
     updateData.updated_at = new Date().toISOString();
 
-    const profile = await db.profiles.upsert({
-      id: userId,
-      ...updateData,
-    });
+    const { data: profile, error: updateError } = await supabase
+      .from("profiles")
+      .update(updateData)
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("Profile update error:", updateError);
+      return NextResponse.json(
+        { error: "Failed to update profile" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
