@@ -174,7 +174,12 @@ export default function MultiStepForm() {
       const result = await response.json();
 
       if (response.ok) {
-        router.push("/dashboard");
+        // Redirect to role-specific dashboard
+        const dashboardPath = formData.role === 'student' ? '/dashboard/student' :
+                             formData.role === 'alumni' ? '/dashboard/alumni' :
+                             formData.role === 'aspirant' ? '/dashboard/aspirant' :
+                             '/dashboard';
+        router.push(dashboardPath);
       } else {
         setErrors({ submit: result.error || "Failed to save profile" });
       }

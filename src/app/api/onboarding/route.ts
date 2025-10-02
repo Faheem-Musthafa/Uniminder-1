@@ -159,7 +159,11 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("✅ Profile saved successfully:", profile?.id);
+    console.log("✅ Profile saved successfully:", {
+      id: profile?.id,
+      onboarded: profile?.onboarded,
+      role: profile?.role
+    });
 
     return NextResponse.json({
       success: true,
