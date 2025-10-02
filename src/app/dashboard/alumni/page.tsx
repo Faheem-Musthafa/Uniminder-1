@@ -36,9 +36,12 @@ export default async function AlumniDashboardPage() {
     redirect('/onboarding');
   }
 
-  // Only alumni can access this dashboard
+  // Redirect non-alumni to their appropriate dashboard
   if (profile.role !== 'alumni') {
-    redirect('/dashboard');
+    const dashboardPath = profile.role === 'student' ? '/dashboard/student' :
+                         profile.role === 'aspirant' ? '/dashboard/aspirant' :
+                         '/dashboard';
+    redirect(dashboardPath);
   }
 
   return (

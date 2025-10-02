@@ -10,14 +10,23 @@ export default async function StudentDashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
+  // Check if user profile exists and is onboarded
   const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
+    .from('profiles')
+    .select('*')
+    .eq('user_id', userId)
     .single();
 
-  if (!profile?.onboarded) {
-    redirect("/onboarding");
+  if (!profile || !profile.onboarded) {
+    redirect('/onboarding');
+  }
+
+  // Redirect non-students to their appropriate dashboard
+  if (profile.role !== 'student') {
+    const dashboardPath = profile.role === 'alumni' ? '/dashboard/alumni' :
+                         profile.role === 'aspirant' ? '/dashboard/aspirant' :
+                         '/dashboard';
+    redirect(dashboardPath);
   }
 
   if (profile.role !== "student") {

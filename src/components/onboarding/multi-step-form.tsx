@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +68,7 @@ export default function MultiStepForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const router = useRouter();
+  // const router = useRouter(); // Using window.location.href instead for hard refresh
   const { user, isLoaded } = useUser();
 
   // Auto-fill user data
@@ -174,12 +174,17 @@ export default function MultiStepForm() {
       const result = await response.json();
 
       if (response.ok) {
+        // Small delay to ensure database is updated
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Redirect to role-specific dashboard
         const dashboardPath = formData.role === 'student' ? '/dashboard/student' :
                              formData.role === 'alumni' ? '/dashboard/alumni' :
                              formData.role === 'aspirant' ? '/dashboard/aspirant' :
                              '/dashboard';
-        router.push(dashboardPath);
+        
+        // Force reload to ensure middleware sees the updated profile
+        window.location.href = dashboardPath;
       } else {
         setErrors({ submit: result.error || "Failed to save profile" });
       }
