@@ -18,15 +18,11 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  // Redirect to role-specific dashboard
-  switch (profile.role) {
-    case "student":
-      redirect("/dashboard/student");
-    case "alumni":
-      redirect("/dashboard/alumni");
-    case "aspirant":
-      redirect("/dashboard/aspirant");
-    default:
-      redirect("/onboarding");
+  // Redirect to student dashboard
+  if (profile.role === "student") {
+    redirect("/dashboard/student");
+  } else {
+    // For now, redirect non-students to onboarding or show appropriate message
+    redirect("/onboarding");
   }
 }
