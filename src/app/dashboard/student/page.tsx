@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
 import StudentDashboard from "@/components/dashboard/student";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const supabase = getSupabase();
 
@@ -23,5 +24,9 @@ export default async function StudentDashboardPage() {
     redirect("/dashboard");
   }
 
-  return <StudentDashboard profile={profile} />;
+  return (
+    <SidebarProvider>
+      <StudentDashboard profile={profile} />
+    </SidebarProvider>
+  );
 }

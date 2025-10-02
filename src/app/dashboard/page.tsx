@@ -4,7 +4,7 @@ import { getSupabase } from "@/lib/supabase";
 
 const supabase = getSupabase();
 
-export default async function Dashboard() {
+export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
@@ -18,12 +18,15 @@ export default async function Dashboard() {
     redirect("/onboarding");
   }
 
-  switch (profile?.role) {
+  // Redirect to role-specific dashboard
+  switch (profile.role) {
     case "student":
       redirect("/dashboard/student");
     case "alumni":
       redirect("/dashboard/alumni");
-    default:
+    case "aspirant":
       redirect("/dashboard/aspirant");
+    default:
+      redirect("/onboarding");
   }
 }

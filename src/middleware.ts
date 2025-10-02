@@ -1,8 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { createEdgeSupabaseClient } from "@/lib/supabase-edge";
 
+// DEVELOPMENT MODE: Temporarily disable dashboard protection
 const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
+  // "/dashboard(.*)",  // Commented out for development
   "/onboarding(.*)",
 ]);
 
