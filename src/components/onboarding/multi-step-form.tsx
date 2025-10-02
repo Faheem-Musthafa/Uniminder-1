@@ -189,11 +189,11 @@ export default function MultiStepForm() {
   const renderRoleSelection = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-foreground">
           Choose Your Role
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Select the option that best describes you
+        <p className="text-muted-foreground mt-2">
+          Select what best describes you. This helps us personalize your experience.
         </p>
       </div>
 
@@ -222,15 +222,15 @@ export default function MultiStepForm() {
             key={option.role}
             className={`cursor-pointer transition-all hover:shadow-lg ${
               formData.role === option.role
-                ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                : "hover:ring-2 hover:ring-gray-300"
+                ? "ring-2 ring-primary bg-primary/10"
+                : "hover:ring-2 hover:ring-muted"
             }`}
             onClick={() => updateField("role", option.role)}
           >
             <CardContent className="p-6 text-center">
               <div className="text-4xl mb-3">{option.icon}</div>
               <h3 className="font-semibold text-lg mb-2">{option.title}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 {option.description}
               </p>
             </CardContent>
@@ -239,7 +239,7 @@ export default function MultiStepForm() {
       </div>
 
       {errors.role && (
-        <p className="text-red-500 text-sm text-center">{errors.role}</p>
+        <p className="text-destructive text-sm text-center">{errors.role}</p>
       )}
     </div>
   );
@@ -248,10 +248,10 @@ export default function MultiStepForm() {
   const renderBasicInfo = () => (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-2xl font-bold text-foreground">
           Basic Information
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <p className="text-muted-foreground mt-2">
           Tell us about yourself
         </p>
       </div>
@@ -267,7 +267,7 @@ export default function MultiStepForm() {
             className={errors.fullName ? "border-red-500" : ""}
           />
           {errors.fullName && (
-            <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+            <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
           )}
         </div>
 
@@ -317,7 +317,7 @@ export default function MultiStepForm() {
                 className={errors.college ? "border-red-500" : ""}
               />
               {errors.college && (
-                <p className="text-red-500 text-sm mt-1">{errors.college}</p>
+                <p className="text-destructive text-sm mt-1">{errors.college}</p>
               )}
             </div>
 

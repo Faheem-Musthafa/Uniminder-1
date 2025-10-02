@@ -36,11 +36,11 @@ export function ErrorMessage({
 }: ErrorMessageProps) {
   return (
     <div className={`flex flex-col items-center gap-4 p-6 ${className}`}>
-      <div className="flex items-center gap-2 text-red-600">
+      <div className="flex items-center gap-2 text-destructive">
         <AlertCircle className="h-5 w-5" />
         <span className="font-medium">Error</span>
       </div>
-      <p className="text-center text-gray-600">{message}</p>
+      <p className="text-center text-muted-foreground">{message}</p>
       {onRetry && (
         <Button onClick={onRetry} variant="outline" size="sm">
           Try Again
@@ -67,14 +67,14 @@ export function EmptyState({
     <div
       className={`flex flex-col items-center gap-4 p-8 text-center ${className}`}
     >
-      <div className="text-gray-400">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+      <div className="text-muted-foreground">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
           <span className="text-2xl">📭</span>
         </div>
       </div>
       <div className="space-y-2">
-        <h3 className="font-semibold text-gray-900">{title}</h3>
-        <p className="text-gray-600">{description}</p>
+        <h3 className="font-semibold text-foreground">{title}</h3>
+        <p className="text-muted-foreground">{description}</p>
       </div>
       {action && <div>{action}</div>}
     </div>

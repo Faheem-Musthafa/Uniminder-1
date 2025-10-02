@@ -52,8 +52,8 @@ const AuthButtons = memo(function AuthButtons({
           isMobile ? "flex-col w-full" : ""
         } items-center gap-2`}
       >
-        <div className="animate-pulse bg-gray-200 rounded h-8 w-16"></div>
-        <div className="animate-pulse bg-gray-200 rounded h-8 w-20"></div>
+        <div className="animate-pulse bg-muted rounded h-8 w-16"></div>
+        <div className="animate-pulse bg-muted rounded h-8 w-20"></div>
       </div>
     );
   }
@@ -69,13 +69,12 @@ const AuthButtons = memo(function AuthButtons({
         // Signed in user
         <>
           {isMobile && (
-            <p className="text-sm text-gray-600 px-2">
-              Welcome,{" "}
-              {user.firstName || user.emailAddresses?.[0]?.emailAddress}!
+            <p className="text-sm text-muted-foreground px-2">
+              Welcome back
             </p>
           )}
           {!isMobile && (
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               Welcome,{" "}
               {user.firstName || user.emailAddresses?.[0]?.emailAddress}!
             </span>
@@ -146,7 +145,7 @@ export default function NavBar() {
         <button
           onClick={toggleMenu}
           aria-label="Toggle menu"
-          className="md:hidden p-2 rounded-md hover:bg-gray-100"
+          className="md:hidden p-2 rounded-md hover:bg-muted"
         >
           <HamburgerIcon open={open} />
         </button>

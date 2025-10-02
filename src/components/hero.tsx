@@ -17,8 +17,8 @@ const HeroButtons = memo(function HeroButtons({
   if (!isLoaded) {
     return (
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center md:justify-start gap-3 sm:gap-4">
-        <div className="animate-pulse bg-gray-200 rounded h-12 w-40"></div>
-        <div className="animate-pulse bg-gray-200 rounded h-12 w-36"></div>
+        <div className="animate-pulse bg-muted rounded h-12 w-40"></div>
+        <div className="animate-pulse bg-muted rounded h-12 w-36"></div>
       </div>
     );
   }
@@ -82,7 +82,7 @@ export default function Hero() {
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-extrabold tracking-tight mb-3">
             Your University Network, Connected
           </h2>
-          <p className="text-base sm:text-lg md:text-2xl text-gray-500 max-w-2xl mb-6 mx-auto md:mx-0">
+          <p className="text-base sm:text-lg md:text-2xl text-muted-foreground max-w-2xl mb-6 mx-auto md:mx-0">
             UniMinder helps you find mentors, share job referrals, and build
             meaningful connections in your college network. Transform your
             academic journey into career success.

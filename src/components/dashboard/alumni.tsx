@@ -58,11 +58,11 @@ export default function AlumniDashboard({ profile }: DashboardProps) {
           </div>
           <div className="bg-muted/50 min-h-[50vh] flex-1 rounded-xl p-6">
             <h2 className="text-2xl font-bold mb-4">Welcome back, {profile.full_name}!</h2>
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                <strong>College:</strong> {profile.college || 'Not specified'} | 
-                <strong>Graduation:</strong> {profile.passing_year || 'Not specified'} | 
-                <strong>Company:</strong> {profile.company || 'Not specified'}
+            <div className="mb-6 p-4 bg-secondary border border-border rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">College:</strong> {profile.college || 'Not specified'} | 
+                <strong className="text-foreground">Graduation:</strong> {profile.passing_year || 'Not specified'} | 
+                <strong className="text-foreground">Company:</strong> {profile.company || 'Not specified'}
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">

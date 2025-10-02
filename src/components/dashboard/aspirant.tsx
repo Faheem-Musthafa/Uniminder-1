@@ -56,11 +56,11 @@ export default function AspirantDashboard({ profile }: DashboardProps) {
           </div>
           <div className="bg-muted/50 min-h-[50vh] flex-1 rounded-xl p-6">
                         <h2 className="text-2xl font-bold mb-4">Welcome back, {profile.full_name}!</h2>
-            <div className="mb-6 p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                <strong>Target Exam:</strong> {profile.entrance_exam || 'Not specified'} | 
-                <strong>Target College:</strong> {profile.target_college || 'Not specified'} | 
-                <strong>Target Year:</strong> {profile.passing_year || 'Not specified'}
+            <div className="mb-6 p-4 bg-accent border border-border rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Target Exam:</strong> {profile.entrance_exam || 'Not specified'} | 
+                <strong className="text-foreground">Target College:</strong> {profile.target_college || 'Not specified'} | 
+                <strong className="text-foreground">Target Year:</strong> {profile.passing_year || 'Not specified'}
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
@@ -93,13 +93,13 @@ export default function AspirantDashboard({ profile }: DashboardProps) {
               <div className="p-4 border rounded-lg">
                 <h3 className="font-semibold mb-2">Quick Actions</h3>
                 <div className="space-y-2">
-                  <button className="w-full text-left text-sm p-2 hover:bg-gray-100 rounded">
+                  <button className="w-full text-left text-sm p-2 hover:bg-muted rounded transition-colors">
                     📚 Start Daily Practice
                   </button>
-                  <button className="w-full text-left text-sm p-2 hover:bg-gray-100 rounded">
+                  <button className="w-full text-left text-sm p-2 hover:bg-muted rounded transition-colors">
                     📊 Review Last Test
                   </button>
-                  <button className="w-full text-left text-sm p-2 hover:bg-gray-100 rounded">
+                  <button className="w-full text-left text-sm p-2 hover:bg-muted rounded transition-colors">
                     👥 Join Study Group
                   </button>
                 </div>

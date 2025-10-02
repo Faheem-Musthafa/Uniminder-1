@@ -58,12 +58,12 @@ export default function StudentDashboard({ profile }: DashboardProps) {
           </div>
           <div className="bg-muted/50 min-h-[50vh] flex-1 rounded-xl p-6">
             <h2 className="text-2xl font-bold mb-4">Welcome back, {profile.full_name?.split(' ')[0] || 'Student'}!</h2>
-            <div className="mb-6 p-4 bg-purple-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                <strong>College:</strong> {profile.college || 'Not specified'} | 
-                <strong>Degree:</strong> {profile.degree || 'Not specified'} | 
-                <strong>Branch:</strong> {profile.branch || 'Not specified'} | 
-                <strong>Year:</strong> {profile.passing_year || 'Not specified'}
+            <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">College:</strong> {profile.college || 'Not specified'} | 
+                <strong className="text-foreground">Degree:</strong> {profile.degree || 'Not specified'} | 
+                <strong className="text-foreground">Branch:</strong> {profile.branch || 'Not specified'} | 
+                <strong className="text-foreground">Year:</strong> {profile.passing_year || 'Not specified'}
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
@@ -97,16 +97,16 @@ export default function StudentDashboard({ profile }: DashboardProps) {
               <div className="p-4 border rounded-lg">
                 <h3 className="font-semibold mb-2">Quick Actions</h3>
                 <div className="space-y-2">
-                  <button className="w-full text-left text-sm p-2 hover:bg-gray-100 rounded">
+                  <button className="w-full text-left text-sm p-2 hover:bg-muted rounded transition-colors">
                     📝 Submit Assignment
                   </button>
-                  <button className="w-full text-left text-sm p-2 hover:bg-gray-100 rounded">
+                  <button className="w-full text-left text-sm p-2 hover:bg-muted rounded transition-colors">
                     📊 Check Grades
                   </button>
-                  <button className="w-full text-left text-sm p-2 hover:bg-gray-100 rounded">
+                  <button className="w-full text-left text-sm p-2 hover:bg-muted rounded transition-colors">
                     💬 Join Study Group
                   </button>
-                  <button className="w-full text-left text-sm p-2 hover:bg-gray-100 rounded">
+                  <button className="w-full text-left text-sm p-2 hover:bg-muted rounded transition-colors">
                     📅 View Full Schedule
                   </button>
                 </div>
