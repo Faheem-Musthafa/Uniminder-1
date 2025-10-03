@@ -17,7 +17,7 @@ export default async function StudentDashboardPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("user_id", user.id)
     .single();
 
   if (!profile || !profile.onboarded) {
@@ -36,7 +36,7 @@ export default async function StudentDashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
       <AppSidebar profile={profile} />
       <div className="flex-1 overflow-hidden">
         <StudentDashboard profile={profile} />

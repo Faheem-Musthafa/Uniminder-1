@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import {
@@ -77,24 +79,24 @@ export function AppSidebar({ profile }: AppSidebarProps) {
     <div
       className={`${
         isOpen ? "w-64" : "w-20"
-      } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col h-full`}
+      } bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 flex flex-col h-full`}
     >
       {/* Header */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
         {isOpen && (
           <div>
-            <h2 className="text-xl font-bold text-gray-800">UniMinder</h2>
-            <p className="text-xs text-gray-500 capitalize">{profile.role} Dashboard</p>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">UniMinder</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{profile.role} Dashboard</p>
           </div>
         )}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           {isOpen ? (
-            <PanelLeftClose className="w-5 h-5 text-gray-600" />
+            <PanelLeftClose className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           ) : (
-            <PanelLeft className="w-5 h-5 text-gray-600" />
+            <PanelLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           )}
         </button>
       </div>
@@ -107,7 +109,7 @@ export function AppSidebar({ profile }: AppSidebarProps) {
             <Link
               key={item.title}
               href={item.url}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors group"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors group"
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               {isOpen && (
@@ -121,11 +123,11 @@ export function AppSidebar({ profile }: AppSidebarProps) {
       </nav>
 
       {/* Profile Footer */}
-      <div className="border-t border-gray-200 p-3">
+      <div className="border-t border-gray-200 dark:border-gray-800 p-3">
         <div className="relative">
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
               <User className="w-5 h-5 text-white" />
@@ -133,15 +135,15 @@ export function AppSidebar({ profile }: AppSidebarProps) {
             {isOpen && (
               <>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {profile.full_name || user?.fullName || "User"}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {profile.email || user?.primaryEmailAddress?.emailAddress}
                   </p>
                 </div>
                 <ChevronDown
-                  className={`w-4 h-4 text-gray-500 transition-transform ${
+                  className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${
                     isProfileOpen ? "rotate-180" : ""
                   }`}
                 />
@@ -151,25 +153,25 @@ export function AppSidebar({ profile }: AppSidebarProps) {
 
           {/* Dropdown Menu */}
           {isProfileOpen && isOpen && (
-            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
               <Link
                 href="/profile"
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <User className="w-4 h-4" />
                 <span>Profile</span>
               </Link>
               <Link
                 href="/settings"
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <Settings className="w-4 h-4" />
                 <span>Settings</span>
               </Link>
-              <hr className="border-gray-200" />
+              <hr className="border-gray-200 dark:border-gray-700" />
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign out</span>
