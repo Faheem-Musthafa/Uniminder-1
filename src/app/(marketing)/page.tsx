@@ -5,6 +5,9 @@ import FooterSection from "@/components/footer";
 import Hero from "@/components/hero";
 import NavBar from "@/components/navbar";
 
+// Force dynamic rendering to avoid build-time Clerk issues
+export const dynamic = 'force-dynamic';
+
 export default async function LandingPage() {
   // const supabase = getSupabase();
   // const { data, error } = await supabase.from("profiles").select("*");

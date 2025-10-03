@@ -18,12 +18,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 
-const supabase = getSupabase();
-
 export default async function CalendarPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
+  const supabase = getSupabase();
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

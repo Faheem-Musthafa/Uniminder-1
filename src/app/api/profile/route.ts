@@ -4,14 +4,14 @@ import { getSupabase } from "@/lib/supabase";
 import { rateLimiter } from "@/lib/rate-limit";
 import { handleApiError } from "@/lib/errors";
 
-const supabase = getSupabase();
-
 export async function GET() {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const supabase = getSupabase();
 
     // Rate limiting
     const rateCheck = rateLimiter(userId, 50, 60000); // 50 requests per minute
@@ -58,6 +58,8 @@ export async function PUT(req: Request) {
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const supabase = getSupabase();
 
     // Rate limiting
     const rateCheck = rateLimiter(`${userId}-update`, 10, 60000);

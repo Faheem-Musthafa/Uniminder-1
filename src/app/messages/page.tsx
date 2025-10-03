@@ -20,12 +20,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Send, Search, Plus } from "lucide-react";
 
-const supabase = getSupabase();
-
 export default async function MessagesPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
+  const supabase = getSupabase();
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getSupabase } from "@/lib/supabase";
 
-const supabase = getSupabase();
-
 interface OnboardingData {
   role: "student" | "alumni" | "aspirant";
   fullName: string;
@@ -30,6 +28,8 @@ export async function POST(req: Request) {
     const { userId } = await auth();
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const supabase = getSupabase();
 
     const data: OnboardingData = await req.json();
 
@@ -184,6 +184,8 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const supabase = getSupabase();
 
     const { data: profile, error } = await supabase
       .from("profiles")

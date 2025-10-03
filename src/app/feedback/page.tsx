@@ -36,12 +36,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const supabase = getSupabase();
-
 export default async function FeedbackPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
+  const supabase = getSupabase();
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

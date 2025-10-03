@@ -3,12 +3,11 @@ import { redirect } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
 import ProfileEditForm from "@/components/profile/profile-edit-form";
 
-const supabase = getSupabase();
-
 export default async function ProfilePage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
+  const supabase = getSupabase();
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

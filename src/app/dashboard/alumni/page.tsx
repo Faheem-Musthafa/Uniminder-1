@@ -1,8 +1,8 @@
-import { redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs/server";
-import { getSupabase } from "@/lib/supabase";
-import { AppSidebar } from "@/components/app-sidebar";
-import Alumni from "@/components/dashboard/alumni";
+import { redirect } from 'next/navigation';
+import { currentUser } from '@clerk/nextjs/server';
+import { getSupabase } from '@/lib/supabase';
+import { AppSidebar } from '@/components/app-sidebar';
+import Alumni from '@/components/dashboard/alumni';
 
 export default async function AlumniDashboardPage() {
   const user = await currentUser();
@@ -15,9 +15,9 @@ export default async function AlumniDashboardPage() {
 
   // Check if user profile exists and is onboarded
   const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
+    .from('profiles')
+    .select('*')
+    .eq('user_id', user.id)
     .single();
 
   if (!profile || !profile.onboarded) {
