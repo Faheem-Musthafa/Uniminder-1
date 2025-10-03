@@ -13,6 +13,7 @@ import {
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react";
+import { ModeToggle } from "./DrakModeToggle";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = React.useState(true);
@@ -70,6 +71,7 @@ const Sidebar = () => {
                 )}
               </a>
             );
+            <ModeToggle />;
           })}
         </nav>
 
