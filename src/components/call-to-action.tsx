@@ -89,7 +89,7 @@ export default function CallToAction() {
   const { user, isLoaded } = useAppUser();
 
   return (
-    <section id="support" className="py-16 md:py-32">
+    <section id="support" className="py-16 md:py-32 bg-white dark:bg-gray-950">
       <div className="mx-auto max-w-5xl px-6">
         <CTAContent user={user} isLoaded={isLoaded} />
       </div>
