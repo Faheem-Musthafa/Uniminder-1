@@ -4,6 +4,8 @@
 import StudentDashboard from "@/components/dashboard/student";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Profile } from "@/types";
+import { SettingsProvider } from "@/hooks/use-settings";
+import SettingsModal from "@/components/settings/settings";
 
 export default async function StudentDashboardPage() {
   // const user = await currentUser();
@@ -61,11 +63,14 @@ export default async function StudentDashboardPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
-      <AppSidebar profile={profile} />
-      <div className="flex-1 overflow-hidden">
-        <StudentDashboard profile={profile} />
+    <SettingsProvider>
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+        <AppSidebar profile={profile} />
+        <div className="flex-1 overflow-hidden lg:ml-0">
+          <StudentDashboard profile={profile} />
+        </div>
+        <SettingsModal profile={profile} />
       </div>
-    </div>
+    </SettingsProvider>
   );
 }

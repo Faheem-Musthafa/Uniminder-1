@@ -28,6 +28,14 @@ export interface Profile {
   privacy_settings?: Record<string, boolean>;
   is_mentor_available?: boolean;
   mentor_capacity?: number;
+  
+  // Verification fields
+  verification_status?: 'pending' | 'in_review' | 'approved' | 'rejected' | 'resubmit';
+  verification_method?: string;
+  verification_data?: Record<string, unknown>;
+  verified_at?: string;
+  verification_notes?: string;
+  
   created_at: string;
   updated_at: string;
 }

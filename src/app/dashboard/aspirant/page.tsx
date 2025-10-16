@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
 import AspirantDashboard from "@/components/dashboard/aspirant";
 import { AppSidebar } from "@/components/app-sidebar";
+import { SettingsProvider } from '@/hooks/use-settings';
+import SettingsModal from '@/components/settings/settings';
 
 export default async function AspirantDashboardPage() {
   const user = await currentUser();
@@ -36,11 +38,14 @@ export default async function AspirantDashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
-      <AppSidebar profile={profile} />
-      <div className="flex-1 overflow-hidden">
-        <AspirantDashboard profile={profile} />
+    <SettingsProvider>
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+        <AppSidebar profile={profile} />
+        <div className="flex-1 overflow-hidden lg:ml-0">
+          <AspirantDashboard profile={profile} />
+        </div>
+        <SettingsModal profile={profile} />
       </div>
-    </div>
+    </SettingsProvider>
   );
 }
