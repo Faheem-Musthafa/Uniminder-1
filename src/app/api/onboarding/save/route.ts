@@ -11,7 +11,7 @@ export async function PATCH(req: Request) {
     const body = await req.json();
 
     // Allow partial update, do not force onboarded=true here
-    const payload: Record<string, unknown> = { id: userId, updated_at: new Date().toISOString() };
+    const payload: Record<string, unknown> = { user_id: userId, updated_at: new Date().toISOString() };
     const allowed = [
       "full_name",
       "role",
@@ -39,7 +39,7 @@ export async function PATCH(req: Request) {
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from("profiles")
-      .upsert(payload, { onConflict: "id" })
+      .upsert(payload, { onConflict: "user_id" })
       .select("id, onboarded")
       .single();
 

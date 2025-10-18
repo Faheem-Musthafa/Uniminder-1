@@ -112,8 +112,7 @@ export async function POST(req: Request) {
 
     // Prepare payload for database
     const payload = {
-      id: userId, // Use 'id' instead of 'user_id' to match middleware
-      user_id: userId, // Keep both for compatibility
+      user_id: userId, // Primary key field
       email: data.email,
       role: data.role,
       full_name: data.fullName,
@@ -166,7 +165,7 @@ export async function POST(req: Request) {
     const { data: profile, error: upsertError } = await supabase
       .from("profiles")
       .upsert(payload, {
-        onConflict: "id",
+        onConflict: "user_id",
         ignoreDuplicates: false,
       })
       .select()
@@ -250,7 +249,7 @@ export async function GET() {
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", userId)
+      .eq("user_id", userId)
       .single();
 
     if (error && error.code !== "PGRST116") {

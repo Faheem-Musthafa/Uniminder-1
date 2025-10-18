@@ -61,10 +61,9 @@ export async function POST(req: NextRequest) {
       .select("id, status")
       .eq("user_id", userId)
       .eq("verification_method", "id_card")
-      .eq("status", "pending")
-      .single();
+      .maybeSingle();
 
-    if (requestError && requestError.code !== "PGRST116") {
+    if (requestError) {
       console.error("Error checking existing verification request:", requestError);
       return NextResponse.json(
         { error: "Failed to check verification status" },
@@ -72,14 +71,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!existingRequest) {
-      return NextResponse.json(
-        { error: "No pending verification request found. Please complete onboarding first." },
-        { status: 400 }
-      );
-    }
+    let requestId: string;
 
-    const requestId = existingRequest.id;
+    // Create verification request if it doesn't exist
+    if (!existingRequest) {
+      const { data: newRequest, error: createError } = await supabase
+        .from("verification_requests")
+        .insert({
+          user_id: userId,
+          profile_id: userId,
+          verification_method: "id_card",
+          status: "pending",
+          submitted_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+
+      if (createError || !newRequest) {
+        console.error("Error creating verification request:", createError);
+        return NextResponse.json(
+          { error: "Failed to create verification request" },
+          { status: 500 }
+        );
+      }
+
+      requestId = newRequest.id;
+    } else {
+      requestId = existingRequest.id;
+    }
 
     // Upload files to Supabase Storage
     const uploadPromises = [];
@@ -213,7 +234,7 @@ export async function POST(req: NextRequest) {
         verification_submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq("id", userId);
+      .eq("user_id", userId);
 
     if (profileUpdateError) {
       console.error("Error updating profile verification status:", profileUpdateError);
