@@ -1,12 +1,41 @@
 // Types for user profiles and database models
 
+export interface VerificationDocument {
+  id: string;
+  type: 'id_card_front' | 'id_card_back' | 'additional_document';
+  url: string;
+  filename: string;
+  uploaded_at: string;
+  verified_at?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  notes?: string;
+}
+
+export interface VerificationRequest {
+  id: string;
+  user_id: string;
+  profile_id: string;
+  verification_method: 'id_card' | 'phone' | 'document';
+  status: 'pending' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'resubmit';
+  documents?: VerificationDocument[];
+  phone_number?: string;
+  verification_code?: string;
+  submitted_at: string;
+  reviewed_at?: string;
+  reviewed_by?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Profile {
   id: string;
   user_id: string;
   email?: string;
   role: "student" | "alumni" | "aspirant" | "admin";
   full_name: string;
-  avatar_url?: string;
+  avatar_url?: string; // legacy optional
+  profile_image_url?: string; // actual column in DB per complete_schema.sql
   location?: string;
   college?: string;
   degree?: string;
@@ -30,11 +59,13 @@ export interface Profile {
   mentor_capacity?: number;
   
   // Verification fields
-  verification_status?: 'pending' | 'in_review' | 'approved' | 'rejected' | 'resubmit';
-  verification_method?: string;
-  verification_data?: Record<string, unknown>;
-  verified_at?: string;
+  verification_status?: 'pending' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'resubmit';
+  verification_method?: 'id_card' | 'phone' | 'document';
+  verification_documents?: VerificationDocument[];
+  phone_verified?: boolean;
   verification_notes?: string;
+  verified_at?: string;
+  verification_submitted_at?: string;
   
   created_at: string;
   updated_at: string;
@@ -189,6 +220,12 @@ export interface OnboardingFormData {
   preferences?: Record<string, unknown>;
   isMentorAvailable?: boolean;
   mentorCapacity?: number;
+  
+  // Verification fields
+  phoneNumber?: string;
+  idCardFront?: File;
+  idCardBack?: File;
+  additionalDocuments?: File[];
 }
 
 export interface DashboardProps {

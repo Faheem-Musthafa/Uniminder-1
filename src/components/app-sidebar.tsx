@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import { Profile } from "@/types";
 import { useSettings } from "@/hooks/use-settings";
+import { useDashboardView } from "@/hooks/use-dashboard-view";
 
 interface AppSidebarProps {
   profile: Profile;
@@ -34,6 +35,7 @@ export function AppSidebar({ profile }: AppSidebarProps) {
   const { user } = useUser();
   const { signOut } = useClerk();
   const { openSettings } = useSettings();
+  const { setCurrentView } = useDashboardView();
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -43,43 +45,41 @@ export function AppSidebar({ profile }: AppSidebarProps) {
       { 
         title: "Dashboard", 
         icon: Home, 
-        url: profile.role === 'student' ? "/dashboard/student" :
-             profile.role === 'alumni' ? "/dashboard/alumni" :
-             profile.role === 'aspirant' ? "/dashboard/aspirant" :
-             "/dashboard"
+        url: undefined,
+        action: () => setCurrentView("overview")
       },
-      { title: "Messages", icon: Mail, url: "/messages" },
-      { title: "Notifications", icon: Bell, url: "/notifications" },
+      { title: "Messages", icon: Mail, url: "/messages", action: undefined },
+      { title: "Notifications", icon: Bell, url: "/notifications", action: undefined },
     ];
 
     // Role-specific items
     if (profile.role === 'student') {
       return [
         ...commonItems,
-        { title: "Opportunities", icon: Briefcase, url: "/posts" },
-        { title: "Find Mentors", icon: Users, url: "/mentors" },
-        { title: "My Mentors", icon: GraduationCap, url: "/mentorship" },
-        { title: "Saved Posts", icon: BookmarkIcon, url: "/saved" },
+        { title: "Opportunities", icon: Briefcase, url: undefined, action: () => setCurrentView("posts") },
+        { title: "Find Mentors", icon: Users, url: "/mentors", action: undefined },
+        { title: "My Mentors", icon: GraduationCap, url: "/mentorship", action: undefined },
+        { title: "Saved Posts", icon: BookmarkIcon, url: "/saved", action: undefined },
       ];
     }
 
     if (profile.role === 'alumni') {
       return [
         ...commonItems,
-        { title: "My Posts", icon: Briefcase, url: "/posts/my-posts" },
-        { title: "Create Post", icon: PlusCircle, url: "/posts/create" },
-        { title: "My Mentees", icon: Users, url: "/mentorship" },
-        { title: "Analytics", icon: TrendingUp, url: "/analytics" },
+        { title: "My Posts", icon: Briefcase, url: "/posts/my-posts", action: undefined },
+        { title: "Create Post", icon: PlusCircle, url: "/posts/create", action: undefined },
+        { title: "My Mentees", icon: Users, url: "/mentorship", action: undefined },
+        { title: "Analytics", icon: TrendingUp, url: "/analytics", action: undefined },
       ];
     }
 
     if (profile.role === 'aspirant') {
       return [
         ...commonItems,
-        { title: "Explore", icon: Search, url: "/explore" },
-        { title: "Q&A Forum", icon: MessageSquare, url: "/forum" },
-        { title: "Connect", icon: Users, url: "/connect" },
-        { title: "Resources", icon: BookmarkIcon, url: "/resources" },
+        { title: "Explore", icon: Search, url: "/explore", action: undefined },
+        { title: "Q&A Forum", icon: MessageSquare, url: "/forum", action: undefined },
+        { title: "Connect", icon: Users, url: "/connect", action: undefined },
+        { title: "Resources", icon: BookmarkIcon, url: "/resources", action: undefined },
       ];
     }
 
@@ -87,10 +87,10 @@ export function AppSidebar({ profile }: AppSidebarProps) {
     if (profile.role === 'admin') {
       return [
         ...commonItems,
-        { title: "Users", icon: Users, url: "/admin/users" },
-        { title: "Posts", icon: Briefcase, url: "/admin/posts" },
-        { title: "Reports", icon: MessageSquare, url: "/admin/reports" },
-        { title: "Analytics", icon: TrendingUp, url: "/admin/analytics" },
+        { title: "Users", icon: Users, url: "/admin/users", action: undefined },
+        { title: "Posts", icon: Briefcase, url: "/admin/posts", action: undefined },
+        { title: "Reports", icon: MessageSquare, url: "/admin/reports", action: undefined },
+        { title: "Analytics", icon: TrendingUp, url: "/admin/analytics", action: undefined },
       ];
     }
 
@@ -219,10 +219,28 @@ export function AppSidebar({ profile }: AppSidebarProps) {
         {menuItems.map((item) => {
           const Icon = item.icon;
           
+          // If there's an action (like setting view), render as button
+          if (item.action) {
+            return (
+              <button
+                key={item.title}
+                onClick={item.action}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all group ${
+                  isCollapsed ? 'justify-center' : ''
+                }`}
+                title={isCollapsed ? item.title : ''}
+              >
+                <Icon className="w-5 h-5" />
+                {!isCollapsed && <span className="text-sm font-medium">{item.title}</span>}
+              </button>
+            );
+          }
+
+          // Otherwise render as link
           return (
             <Link
               key={item.title}
-              href={item.url}
+              href={item.url || '#'}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all group ${
                 isCollapsed ? 'justify-center' : ''
               }`}

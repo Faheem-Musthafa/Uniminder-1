@@ -16,11 +16,17 @@ interface OnboardingData {
   entranceExam?: string;
   targetCollege?: string;
   linkedin?: string;
-  skills?: string;
+  skills?: string[];
   bio?: string;
   yearsOfExperience?: number;
   interests?: string[];
   lookingFor?: string[];
+  
+  // Verification fields
+  phoneNumber?: string;
+  idCardFront?: File;
+  idCardBack?: File;
+  additionalDocuments?: File[];
 }
 
 export async function POST(req: Request) {
@@ -81,6 +87,29 @@ export async function POST(req: Request) {
       );
     }
 
+    // Verification validation
+    if (data.role === "student" || data.role === "alumni") {
+      // For students and alumni, ID card verification is required
+      // File uploads will be handled separately via /api/verification/upload
+    }
+
+    if (data.role === "aspirant") {
+      if (!data.phoneNumber?.trim()) {
+        return NextResponse.json(
+          { error: "Phone number is required for aspirants" },
+          { status: 400 }
+        );
+      }
+      // Basic phone number validation
+      const phoneRegex = /^\+\d{1,3}\s?\d{8,15}$/;
+      if (!phoneRegex.test(data.phoneNumber)) {
+        return NextResponse.json(
+          { error: "Please enter a valid phone number with country code" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Prepare payload for database
     const payload = {
       id: userId, // Use 'id' instead of 'user_id' to match middleware
@@ -107,6 +136,13 @@ export async function POST(req: Request) {
       interests: Array.isArray(data.interests) ? data.interests : null,
       looking_for: Array.isArray(data.lookingFor) ? data.lookingFor : null,
       onboarded: true,
+      
+      // Verification fields
+      verification_status: 'pending',
+      verification_method: data.role === 'aspirant' ? 'phone' : 'id_card',
+      phone_verified: data.role === 'aspirant' ? false : null,
+      verification_submitted_at: new Date().toISOString(),
+      
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } as Record<string, unknown>;
@@ -164,6 +200,30 @@ export async function POST(req: Request) {
       onboarded: profile?.onboarded,
       role: profile?.role
     });
+
+    // Create verification request
+    const verificationPayload = {
+      user_id: userId,
+      profile_id: userId,
+      verification_method: data.role === 'aspirant' ? 'phone' : 'id_card',
+      status: 'pending',
+      phone_number: data.role === 'aspirant' ? data.phoneNumber : null,
+      submitted_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error: verificationError } = await supabase
+      .from("verification_requests")
+      .insert(verificationPayload);
+
+    if (verificationError) {
+      console.error("❌ Verification request creation error:", verificationError);
+      // Don't fail the entire onboarding if verification request fails
+      // Just log it and continue
+    } else {
+      console.log("✅ Verification request created successfully");
+    }
 
     return NextResponse.json({
       success: true,

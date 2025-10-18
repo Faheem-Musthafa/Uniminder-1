@@ -1,338 +1,241 @@
--- Sample Data for Testing UniMinder Dashboards
--- Run this after setting up the schema to populate test data
+-- ============================================
+-- UniMinder Sample Data
+-- Load this after setting up the schema
+-- ============================================
 
--- Note: Replace 'your_clerk_user_id' with actual Clerk user IDs from your system
+-- Note: Replace user_id values with actual Clerk user IDs in production
 
--- ================================================================
--- 1. SAMPLE ALUMNI POSTS (Job Openings & Referrals)
--- ================================================================
+-- Sample admin user
+INSERT INTO public.profiles (id, user_id, email, role, full_name, location, onboarded, is_verified, is_active)
+VALUES 
+('admin-001', 'admin-001', 'admin@uniminder.com', 'admin', 'Admin User', 'Mumbai, India', true, true, true)
+ON CONFLICT (id) DO NOTHING;
 
--- Sample Job Post 1
-INSERT INTO public.posts (
-    author_id, 
-    type, 
-    title, 
-    content, 
-    company_name, 
-    location, 
-    salary_range,
-    experience_required,
-    tags,
-    is_active,
-    views_count,
-    likes_count,
-    comments_count,
-    created_at
-) VALUES (
-    'your_alumni_clerk_id', -- Replace with actual alumni user ID
+-- Sample students
+INSERT INTO public.profiles (
+    id, user_id, email, role, full_name, location, college, degree, branch, passing_year,
+    skills, interests, looking_for, bio, onboarded, is_active
+)
+VALUES 
+(
+    'student-001', 'student-001', 'john.doe@student.com', 'student',
+    'John Doe', 'Mumbai, India',
+    'Indian Institute of Technology, Mumbai', 'Bachelor of Technology', 'Computer Science', '2026',
+    ARRAY['JavaScript', 'React', 'Node.js', 'Python'],
+    ARRAY['Web Development', 'Machine Learning', 'Open Source'],
+    ARRAY['Internships', 'Projects', 'Mentorship'],
+    'Computer Science student passionate about web development and AI.',
+    true, true
+),
+(
+    'student-002', 'student-002', 'jane.smith@student.com', 'student',
+    'Jane Smith', 'Delhi, India',
+    'Delhi Technological University', 'Bachelor of Technology', 'Electronics', '2025',
+    ARRAY['C++', 'Embedded Systems', 'IoT'],
+    ARRAY['Robotics', 'Hardware', 'Innovation'],
+    ARRAY['Internships', 'Research Opportunities'],
+    'Electronics enthusiast interested in IoT and embedded systems.',
+    true, true
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Sample alumni
+INSERT INTO public.profiles (
+    id, user_id, email, role, full_name, location, college, degree, branch, passing_year,
+    company, designation, years_of_experience, skills, interests, mentorship_areas,
+    bio, onboarded, is_verified, is_active
+)
+VALUES 
+(
+    'alumni-001', 'alumni-001', 'mike.johnson@alumni.com', 'alumni',
+    'Mike Johnson', 'Bangalore, India',
+    'Indian Institute of Technology, Mumbai', 'Bachelor of Technology', 'Computer Science', '2018',
+    'Google', 'Senior Software Engineer', 6,
+    ARRAY['Python', 'Go', 'Kubernetes', 'System Design'],
+    ARRAY['Distributed Systems', 'Cloud Computing', 'Mentorship'],
+    ARRAY['Career Guidance', 'Technical Interview Prep', 'System Design'],
+    'Senior engineer at Google, passionate about helping students navigate tech careers.',
+    true, true, true
+),
+(
+    'alumni-002', 'alumni-002', 'sarah.williams@alumni.com', 'alumni',
+    'Sarah Williams', 'Pune, India',
+    'Pune Institute of Technology', 'Bachelor of Technology', 'Computer Science', '2019',
+    'Microsoft', 'Software Development Engineer', 5,
+    ARRAY['C#', '.NET', 'Azure', 'React'],
+    ARRAY['Cloud Development', 'Full Stack', 'Mentoring'],
+    ARRAY['Full Stack Development', 'Career Transition', 'Interview Skills'],
+    'Full-stack developer at Microsoft, helping students land their dream jobs.',
+    true, true, true
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Sample aspirants
+INSERT INTO public.profiles (
+    id, user_id, email, role, full_name, location, entrance_exam, target_college,
+    skills, interests, looking_for, bio, onboarded, phone_verified, is_active
+)
+VALUES 
+(
+    'aspirant-001', 'aspirant-001', 'rahul.kumar@aspirant.com', 'aspirant',
+    'Rahul Kumar', 'Kota, India',
+    'JEE Advanced', 'IIT Bombay',
+    ARRAY['Physics', 'Chemistry', 'Mathematics'],
+    ARRAY['JEE Preparation', 'Problem Solving', 'Study Groups'],
+    ARRAY['Study Materials', 'Mentorship', 'Tips'],
+    'JEE aspirant targeting IIT Bombay, looking for guidance and study resources.',
+    true, true, true
+),
+(
+    'aspirant-002', 'aspirant-002', 'priya.sharma@aspirant.com', 'aspirant',
+    'Priya Sharma', 'Pune, India',
+    'CAT', 'IIM Ahmedabad',
+    ARRAY['Quantitative Aptitude', 'Verbal Ability', 'Logical Reasoning'],
+    ARRAY['Management', 'Business', 'Leadership'],
+    ARRAY['Study Groups', 'Mock Tests', 'Career Advice'],
+    'CAT aspirant preparing for IIM admission, eager to connect with MBA students and alumni.',
+    true, true, true
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Sample posts
+INSERT INTO public.posts (author_id, type, title, content, company_name, location, tags, is_active)
+VALUES 
+(
+    'alumni-001',
     'job',
-    'Senior Software Engineer - Full Stack',
-    'We are looking for an experienced full-stack developer to join our growing team. You will work on cutting-edge technologies and solve challenging problems.',
-    'TechCorp Solutions',
-    'Mumbai, India (Hybrid)',
-    '₹15-25 LPA',
-    '3-5 years',
-    ARRAY['React', 'Node.js', 'TypeScript', 'AWS'],
-    true,
-    145,
-    28,
-    12,
-    NOW() - INTERVAL '2 days'
-);
-
--- Sample Job Post 2
-INSERT INTO public.posts (
-    author_id, 
-    type, 
-    title, 
-    content, 
-    company_name, 
-    location, 
-    tags,
-    is_active,
-    views_count,
-    likes_count,
-    created_at
-) VALUES (
-    'your_alumni_clerk_id',
-    'job',
-    'Frontend Developer - React',
-    'Join our team as a React developer. Great learning opportunities and competitive salary.',
-    'StartupXYZ',
-    'Bangalore, India (Remote)',
-    ARRAY['React', 'JavaScript', 'CSS', 'Git'],
-    true,
-    89,
-    15,
-    NOW() - INTERVAL '5 days'
-);
-
--- Sample Referral Post
-INSERT INTO public.posts (
-    author_id, 
-    type, 
-    title, 
-    content, 
-    company_name, 
-    location, 
-    tags,
-    is_active,
-    views_count,
-    likes_count,
-    created_at
-) VALUES (
-    'your_alumni_clerk_id',
-    'referral',
-    'Referral: Data Scientist at Google',
-    'I can refer qualified candidates for a Data Scientist position at Google. Must have strong Python and ML skills. DM for details.',
+    'Software Engineer - Backend (2-3 years exp)',
+    'Google is hiring backend engineers. Looking for candidates with strong system design skills and experience with distributed systems. Referrals available!',
     'Google',
-    'Hyderabad, India',
-    ARRAY['Python', 'Machine Learning', 'TensorFlow', 'SQL'],
-    true,
-    234,
-    45,
-    NOW() - INTERVAL '1 day'
-);
-
--- Sample Update Post
-INSERT INTO public.posts (
-    author_id, 
-    type, 
-    title, 
-    content, 
-    tags,
-    is_active,
-    views_count,
-    likes_count,
-    created_at
-) VALUES (
-    'your_alumni_clerk_id',
-    'update',
-    'Career Tips: How to Ace Technical Interviews',
-    'Sharing my experience and tips on clearing technical interviews at top companies. Key points: practice DSA, understand system design, and be confident!',
-    ARRAY['Career Advice', 'Interviews', 'Tips'],
-    true,
-    567,
-    89,
-    NOW() - INTERVAL '3 days'
-);
-
--- ================================================================
--- 2. SAMPLE ASPIRANT RESOURCES
--- ================================================================
-
--- Sample Resource Post 1
-INSERT INTO public.posts (
-    author_id, 
-    type, 
-    title, 
-    content, 
-    external_url,
-    tags,
-    is_active,
-    views_count,
-    likes_count,
-    created_at
-) VALUES (
-    'your_alumni_clerk_id',
-    'resource',
-    'Complete Web Development Roadmap 2025',
-    'A comprehensive guide to learning web development from scratch. Covers HTML, CSS, JavaScript, React, and backend technologies.',
-    'https://roadmap.sh/frontend',
-    ARRAY['Web Development', 'Learning', 'Roadmap', 'Frontend'],
-    true,
-    423,
-    67,
-    NOW() - INTERVAL '4 days'
-);
-
--- Sample Question Post
-INSERT INTO public.posts (
-    author_id, 
-    type, 
-    title, 
-    content, 
-    tags,
-    is_active,
-    views_count,
-    comments_count,
-    created_at
-) VALUES (
-    'your_aspirant_clerk_id', -- Replace with aspirant user ID
+    'Bangalore, India',
+    ARRAY['Backend', 'System Design', 'Go', 'Kubernetes'],
+    true
+),
+(
+    'alumni-002',
+    'referral',
+    'Microsoft Internship Referral - Summer 2026',
+    'Hey students! I can refer for Microsoft internships. Drop your resume and I''ll forward it to the recruiters. Preference for strong DSA skills.',
+    'Microsoft',
+    'Remote',
+    ARRAY['Internship', 'DSA', 'C#', 'Azure'],
+    true
+),
+(
+    'student-001',
     'question',
-    'Best way to prepare for JEE Advanced?',
-    'I am currently in 12th grade and planning to take JEE Advanced. What are the best study strategies and resources? Any tips from those who have cleared it?',
-    ARRAY['JEE', 'Exam Preparation', 'Study Tips'],
-    true,
-    156,
-    23,
-    NOW() - INTERVAL '6 hours'
-);
+    'Best resources for learning React?',
+    'I''m starting with React and looking for comprehensive resources. What do you recommend for beginners? Any good projects to build?',
+    NULL,
+    NULL,
+    ARRAY['React', 'Web Development', 'Learning'],
+    true
+),
+(
+    'alumni-001',
+    'update',
+    'Tips for cracking Google interviews',
+    'Just completed my 3rd year at Google. Here are my top tips for interview prep: 1) Focus on fundamentals 2) Practice system design 3) Mock interviews are crucial 4) Don''t ignore behavioral rounds. Happy to answer questions!',
+    NULL,
+    NULL,
+    ARRAY['Interview Tips', 'Google', 'Career Advice'],
+    true
+)
+ON CONFLICT DO NOTHING;
 
--- ================================================================
--- 3. SAMPLE POST INTERACTIONS (Bookmarks, Applications, Likes)
--- ================================================================
-
--- Student bookmarking job posts
-INSERT INTO public.post_interactions (post_id, user_id, interaction_type, created_at)
+-- Sample connections
+INSERT INTO public.user_connections (user_id, connected_user_id)
 VALUES 
-    (1, 'your_student_clerk_id', 'bookmark', NOW() - INTERVAL '1 day'),
-    (2, 'your_student_clerk_id', 'bookmark', NOW() - INTERVAL '2 days'),
-    (3, 'your_student_clerk_id', 'bookmark', NOW() - INTERVAL '3 days');
+('student-001', 'alumni-001'),
+('student-001', 'student-002'),
+('alumni-001', 'alumni-002')
+ON CONFLICT DO NOTHING;
 
--- Student applying to jobs
-INSERT INTO public.post_interactions (post_id, user_id, interaction_type, created_at)
+-- Sample mentorship connections
+INSERT INTO public.mentorship_connections (mentor_id, mentee_id, status, message, accepted_at)
 VALUES 
-    (1, 'your_student_clerk_id', 'apply', NOW() - INTERVAL '1 day'),
-    (2, 'your_student_clerk_id', 'apply', NOW() - INTERVAL '5 days');
+(
+    'alumni-001',
+    'student-001',
+    'accepted',
+    'Hi! I''m interested in learning about careers in system design and distributed systems. Would love your guidance!',
+    now()
+),
+(
+    'alumni-002',
+    'student-002',
+    'pending',
+    'Hello! I''m looking for guidance on full-stack development and career advice for breaking into big tech.',
+    NULL
+)
+ON CONFLICT DO NOTHING;
 
--- Students liking posts
-INSERT INTO public.post_interactions (post_id, user_id, interaction_type, created_at)
+-- Sample notifications
+INSERT INTO public.notifications (user_id, type, title, content, is_read, channel, status)
 VALUES 
-    (1, 'your_student_clerk_id', 'like', NOW() - INTERVAL '2 days'),
-    (4, 'your_student_clerk_id', 'like', NOW() - INTERVAL '3 days');
+(
+    'student-001',
+    'mentorship_accepted',
+    'Mentorship Request Accepted',
+    'Mike Johnson accepted your mentorship request!',
+    false,
+    'in_app',
+    'delivered'
+),
+(
+    'student-002',
+    'post_comment',
+    'New Comment on Your Post',
+    'Sarah Williams commented on your post about React resources.',
+    false,
+    'in_app',
+    'delivered'
+),
+(
+    'alumni-001',
+    'mentorship_request',
+    'New Mentorship Request',
+    'Jane Smith sent you a mentorship request.',
+    false,
+    'in_app',
+    'delivered'
+)
+ON CONFLICT DO NOTHING;
 
--- Aspirant bookmarking resources
-INSERT INTO public.post_interactions (post_id, user_id, interaction_type, created_at)
+-- Sample user preferences
+INSERT INTO public.user_preferences (user_id, email_notifications, push_notifications, notification_frequency, privacy_level)
 VALUES 
-    (5, 'your_aspirant_clerk_id', 'bookmark', NOW() - INTERVAL '4 days'),
-    (6, 'your_aspirant_clerk_id', 'bookmark', NOW() - INTERVAL '2 days');
+('student-001', true, true, 'instant', 'public'),
+('student-002', true, true, 'daily', 'public'),
+('alumni-001', true, false, 'instant', 'public'),
+('alumni-002', true, true, 'daily', 'connections'),
+('aspirant-001', true, true, 'instant', 'public')
+ON CONFLICT DO NOTHING;
 
--- ================================================================
--- 4. SAMPLE CONVERSATIONS & MESSAGES
--- ================================================================
+-- Add some post interactions
+INSERT INTO public.post_interactions (post_id, user_id, interaction_type)
+SELECT id, 'student-001', 'like'
+FROM public.posts
+WHERE author_id = 'alumni-001'
+LIMIT 2
+ON CONFLICT DO NOTHING;
 
--- Create a conversation between student and alumni
-INSERT INTO public.conversations (id, type, created_by, is_active, created_at)
-VALUES 
-    ('550e8400-e29b-41d4-a716-446655440001', 'direct', 'your_student_clerk_id', true, NOW() - INTERVAL '5 days');
+INSERT INTO public.post_interactions (post_id, user_id, interaction_type)
+SELECT id, 'student-002', 'bookmark'
+FROM public.posts
+WHERE type = 'referral'
+LIMIT 1
+ON CONFLICT DO NOTHING;
 
--- Add participants to conversation
-INSERT INTO public.conversation_participants (conversation_id, user_id, joined_at)
-VALUES 
-    ('550e8400-e29b-41d4-a716-446655440001', 'your_student_clerk_id', NOW() - INTERVAL '5 days'),
-    ('550e8400-e29b-41d4-a716-446655440001', 'your_alumni_clerk_id', NOW() - INTERVAL '5 days');
+-- Sample comments
+INSERT INTO public.post_comments (post_id, author_id, content)
+SELECT 
+    p.id,
+    'student-002',
+    'This is really helpful! Thanks for sharing.'
+FROM public.posts p
+WHERE p.author_id = 'alumni-001'
+LIMIT 1
+ON CONFLICT DO NOTHING;
 
--- Add messages to conversation
-INSERT INTO public.messages (conversation_id, sender_id, content, created_at)
-VALUES 
-    ('550e8400-e29b-41d4-a716-446655440001', 'your_student_clerk_id', 
-     'Hi! I saw your job post for the Full Stack position. Could you tell me more about the role?', 
-     NOW() - INTERVAL '4 days'),
-    
-    ('550e8400-e29b-41d4-a716-446655440001', 'your_alumni_clerk_id', 
-     'Sure! It is a great opportunity. The role involves working with React and Node.js on our main product. What is your experience?', 
-     NOW() - INTERVAL '4 days'),
-    
-    ('550e8400-e29b-41d4-a716-446655440001', 'your_student_clerk_id', 
-     'I have 1 year of internship experience with React and am learning Node.js. Would that be sufficient?', 
-     NOW() - INTERVAL '3 days'),
-    
-    ('550e8400-e29b-41d4-a716-446655440001', 'your_alumni_clerk_id', 
-     'That sounds good! I can refer you. Can you send me your resume?', 
-     NOW() - INTERVAL '2 hours');
-
--- Create another conversation (aspirant and alumni)
-INSERT INTO public.conversations (id, type, created_by, is_active, created_at)
-VALUES 
-    ('550e8400-e29b-41d4-a716-446655440002', 'direct', 'your_aspirant_clerk_id', true, NOW() - INTERVAL '3 days');
-
--- Add participants
-INSERT INTO public.conversation_participants (conversation_id, user_id, joined_at)
-VALUES 
-    ('550e8400-e29b-41d4-a716-446655440002', 'your_aspirant_clerk_id', NOW() - INTERVAL '3 days'),
-    ('550e8400-e29b-41d4-a716-446655440002', 'your_alumni_clerk_id', NOW() - INTERVAL '3 days');
-
--- Add messages
-INSERT INTO public.messages (conversation_id, sender_id, content, created_at)
-VALUES 
-    ('550e8400-e29b-41d4-a716-446655440002', 'your_aspirant_clerk_id', 
-     'Hello! I am preparing for college admissions. Can you guide me about the admission process?', 
-     NOW() - INTERVAL '3 days'),
-    
-    ('550e8400-e29b-41d4-a716-446655440002', 'your_alumni_clerk_id', 
-     'Of course! I would be happy to help. What are you interested in studying?', 
-     NOW() - INTERVAL '1 hour');
-
--- ================================================================
--- 5. SAMPLE POST COMMENTS
--- ================================================================
-
--- Comments on job post
-INSERT INTO public.post_comments (post_id, author_id, content, created_at)
-VALUES 
-    (1, 'your_student_clerk_id', 'This looks like a great opportunity! Is remote work possible?', NOW() - INTERVAL '1 day'),
-    (1, 'your_alumni_clerk_id', 'Yes, we offer hybrid work model - 3 days office, 2 days remote.', NOW() - INTERVAL '1 day'),
-    (1, 'user_2', 'What is the interview process like?', NOW() - INTERVAL '12 hours');
-
--- Comments on resource post
-INSERT INTO public.post_comments (post_id, author_id, content, created_at)
-VALUES 
-    (5, 'your_student_clerk_id', 'This roadmap is super helpful! Thanks for sharing.', NOW() - INTERVAL '3 days'),
-    (5, 'your_aspirant_clerk_id', 'Bookmarked! Will follow this guide.', NOW() - INTERVAL '2 days');
-
--- ================================================================
--- 6. UPDATE PROFILE DATA FOR TESTING
--- ================================================================
-
--- Update student profile with skills and interests
-UPDATE public.profiles
-SET 
-    skills = ARRAY['React', 'TypeScript', 'Python', 'Node.js'],
-    interests = ARRAY['Web Development', 'Machine Learning', 'Open Source'],
-    looking_for = ARRAY['Internships', 'Full-time Jobs', 'Mentorship'],
-    bio = 'Computer Science student passionate about full-stack development and AI.'
-WHERE user_id = 'your_student_clerk_id';
-
--- Update alumni profile
-UPDATE public.profiles
-SET 
-    skills = ARRAY['React', 'Node.js', 'AWS', 'System Design', 'Leadership'],
-    company = 'TechCorp Solutions',
-    designation = 'Senior Software Engineer',
-    years_of_experience = 5,
-    bio = 'Senior engineer with 5 years experience. Love mentoring and helping students.'
-WHERE user_id = 'your_alumni_clerk_id';
-
--- Update aspirant profile
-UPDATE public.profiles
-SET 
-    interests = ARRAY['Engineering', 'Web Development', 'Entrepreneurship'],
-    looking_for = ARRAY['College Guidance', 'Career Advice', 'Study Resources'],
-    entrance_exam = 'JEE Advanced',
-    target_college = 'IIT Bombay',
-    bio = '12th grade student preparing for JEE and passionate about technology.'
-WHERE user_id = 'your_aspirant_clerk_id';
-
--- ================================================================
--- 7. VERIFICATION QUERIES
--- ================================================================
-
--- Check total posts
--- SELECT type, COUNT(*) FROM public.posts GROUP BY type;
-
--- Check interactions
--- SELECT interaction_type, COUNT(*) FROM public.post_interactions GROUP BY interaction_type;
-
--- Check conversations and messages
--- SELECT c.id, COUNT(m.id) as message_count 
--- FROM public.conversations c 
--- LEFT JOIN public.messages m ON c.id = m.conversation_id 
--- GROUP BY c.id;
-
--- Check profile data
--- SELECT role, COUNT(*) FROM public.profiles GROUP BY role;
-
--- ================================================================
--- NOTES:
--- ================================================================
--- 1. Replace all 'your_*_clerk_id' with actual Clerk user IDs
--- 2. Replace post_id numbers (1, 2, 3...) with actual IDs after inserting posts
--- 3. Run verification queries to check data was inserted correctly
--- 4. Adjust timestamps as needed using INTERVAL modifications
--- 5. This creates a realistic test environment with:
---    - 6 posts (2 jobs, 1 referral, 1 update, 1 resource, 1 question)
---    - Multiple interactions (bookmarks, applications, likes)
---    - 2 conversations with messages
---    - Comments on posts
---    - Updated profile data
+COMMENT ON TABLE public.profiles IS 'Sample data loaded - ready for testing';

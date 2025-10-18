@@ -1,4 +1,5 @@
-import { getSupabase } from "@/lib/supabase";
+"use client";
+
 import { Profile, Post } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,89 +15,51 @@ import {
   Lightbulb,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface OverviewAspirantProps {
   profile: Profile;
 }
 
-async function getAspirantStats(userId: string, profile: Profile) {
-  const supabase = getSupabase();
+type AspirantStats = { bookmarks: number; connections: number; messages: number; goals: number };
 
-  try {
-    // Get bookmarked resources count
-    const { count: bookmarksCount } = await supabase
-      .from("post_interactions")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("interaction_type", "bookmark");
+export default function OverviewAspirant({ profile }: OverviewAspirantProps) {
+  const [stats, setStats] = useState<AspirantStats>({ bookmarks: 0, connections: 0, messages: 0, goals: 0 });
+  const [resources, setResources] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    // Get connections count
-    const { count: connectionsCount } = await supabase
-      .from("conversation_participants")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId);
-
-    // Get unread messages count
-    const { data: conversations } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id")
-      .eq("user_id", userId);
-
-    const conversationIds = conversations?.map((c) => c.conversation_id) || [];
-
-    let unreadCount = 0;
-    if (conversationIds.length > 0) {
-      const { count } = await supabase
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .in("conversation_id", conversationIds)
-        .neq("sender_id", userId);
-      unreadCount = count || 0;
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const [statsRes, resourcesRes] = await Promise.all([
+          fetch("/api/dashboard/aspirant/stats"),
+          fetch("/api/dashboard/aspirant/resources"),
+        ]);
+        const statsJson = await statsRes.json();
+        const resourcesJson = await resourcesRes.json();
+        if (!mounted) return;
+        if (statsRes.ok && statsJson?.data) setStats(statsJson.data);
+        if (resourcesRes.ok && Array.isArray(resourcesJson?.data)) setResources(resourcesJson.data as Post[]);
+      } catch (e) {
+        console.error("Failed to load aspirant overview:", e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
+    load();
+    return () => { mounted = false; };
+  }, []);
 
-    return {
-      bookmarks: bookmarksCount || 0,
-      connections: connectionsCount || 0,
-      messages: unreadCount,
-      goals: profile.interests?.length || 0,
-    };
-  } catch (error) {
-    console.error("Error fetching aspirant stats:", error);
-    return { bookmarks: 0, connections: 0, messages: 0, goals: 0 };
+  if (loading) {
+    return (
+      <div className="p-6">
+        <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+          <CardContent className="py-10 text-center text-gray-600 dark:text-gray-300">Loading overview…</CardContent>
+        </Card>
+      </div>
+    );
   }
-}
-
-async function getRelevantResources() {
-  const supabase = getSupabase();
-
-  try {
-    const { data: posts } = await supabase
-      .from("posts")
-      .select(
-        `
-        *,
-        author:profiles!posts_author_id_fkey(
-          id, full_name, avatar_url, role, company, designation
-        )
-      `
-      )
-      .eq("is_active", true)
-      .in("type", ["resource", "question", "update"])
-      .order("created_at", { ascending: false })
-      .limit(5);
-
-    return (posts as unknown as Post[]) || [];
-  } catch (error) {
-    console.error("Error fetching resources:", error);
-    return [];
-  }
-}
-
-export default async function OverviewAspirant({
-  profile,
-}: OverviewAspirantProps) {
-  const stats = await getAspirantStats(profile.user_id, profile);
-  const resources = await getRelevantResources();
 
   return (
     <div className="p-6 space-y-6">

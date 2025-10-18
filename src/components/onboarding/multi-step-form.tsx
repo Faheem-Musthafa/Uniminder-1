@@ -34,11 +34,17 @@ interface FormData {
   entranceExam: string;
   targetCollege: string;
   linkedin: string;
-  skills: string;
+  skills: string[];
   bio: string;
   yearsOfExperience: number;
   interests: string[];
   lookingFor: string[];
+  
+  // Verification fields
+  phoneNumber: string;
+  idCardFront?: File;
+  idCardBack?: File;
+  additionalDocuments?: File[];
 }
 
 const initialFormData: FormData = {
@@ -55,11 +61,12 @@ const initialFormData: FormData = {
   entranceExam: "",
   targetCollege: "",
   linkedin: "",
-  skills: "",
+  skills: [],
   bio: "",
   yearsOfExperience: 0,
   interests: [],
   lookingFor: [],
+  phoneNumber: "",
 };
 
 export default function MultiStepForm() {
@@ -68,6 +75,8 @@ export default function MultiStepForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  // Local UI state for skills input field (cannot use hooks inside nested render functions)
+  const [skillInput, setSkillInput] = useState("");
   // const router = useRouter(); // Using window.location.href instead for hard refresh
   const { user, isLoaded } = useUser();
 
@@ -83,7 +92,7 @@ export default function MultiStepForm() {
   }, [isLoaded, user]);
 
   // Calculate progress
-  const totalSteps = formData.role === "student" ? 3 : formData.role === "alumni" ? 4 : formData.role === "aspirant" ? 4 : 1;
+  const totalSteps = formData.role === "student" ? 4 : formData.role === "alumni" ? 5 : formData.role === "aspirant" ? 5 : 1;
   const progress = (currentStep / totalSteps) * 100;
 
   // Update form field
@@ -144,6 +153,22 @@ export default function MultiStepForm() {
       if (!formData.company.trim()) newErrors.company = "Company is required";
     }
 
+    // Verification step validation
+    if ((currentStep === 4 && formData.role === "student") || (currentStep === 5 && (formData.role === "alumni" || formData.role === "aspirant"))) {
+      if (formData.role === "student" || formData.role === "alumni") {
+        if (!formData.idCardFront) newErrors.idCardFront = "ID card front image is required";
+      }
+      
+      if (formData.role === "aspirant") {
+        if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required";
+        // Basic phone number validation
+        const phoneRegex = /^\+\d{1,3}\s?\d{8,15}$/;
+        if (formData.phoneNumber && !phoneRegex.test(formData.phoneNumber)) {
+          newErrors.phoneNumber = "Please enter a valid phone number with country code";
+        }
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -165,29 +190,110 @@ export default function MultiStepForm() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/onboarding", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      // For students and alumni, we need to handle file uploads
+      if (formData.role === "student" || formData.role === "alumni") {
+        // First submit the basic profile data
+        const profileResponse = await fetch("/api/onboarding", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            // Remove file objects from JSON payload
+            idCardFront: undefined,
+            idCardBack: undefined,
+            additionalDocuments: undefined,
+          }),
+        });
 
-      const result = await response.json();
+        const profileResult = await profileResponse.json();
 
-      if (response.ok) {
-        // Small delay to ensure database is updated
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Redirect to role-specific dashboard
-        const dashboardPath = formData.role === 'student' ? '/dashboard/student' :
-                             formData.role === 'alumni' ? '/dashboard/alumni' :
-                             formData.role === 'aspirant' ? '/dashboard/aspirant' :
-                             '/dashboard';
-        
-        // Force reload to ensure middleware sees the updated profile
-        window.location.href = dashboardPath;
+        if (!profileResponse.ok) {
+          setErrors({ submit: profileResult.error || "Failed to save profile" });
+          return;
+        }
+
+        // Then upload verification documents if provided
+        if (formData.idCardFront) {
+          const formDataUpload = new FormData();
+          formDataUpload.append("idCardFront", formData.idCardFront);
+          if (formData.idCardBack) {
+            formDataUpload.append("idCardBack", formData.idCardBack);
+          }
+
+          const uploadResponse = await fetch("/api/verification/upload", {
+            method: "POST",
+            body: formDataUpload,
+          });
+
+          const uploadResult = await uploadResponse.json();
+
+          if (!uploadResponse.ok) {
+            setErrors({ submit: uploadResult.error || "Failed to upload verification documents" });
+            return;
+          }
+        }
+      } else if (formData.role === "aspirant") {
+        // For aspirants, submit profile and initiate phone verification
+        const response = await fetch("/api/onboarding", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          setErrors({ submit: result.error || "Failed to save profile" });
+          return;
+        }
+
+        // Initiate phone verification
+        const phoneResponse = await fetch("/api/verification/phone", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phoneNumber: formData.phoneNumber,
+          }),
+        });
+
+        const phoneResult = await phoneResponse.json();
+
+        if (!phoneResponse.ok) {
+          setErrors({ submit: phoneResult.error || "Failed to send verification code" });
+          return;
+        }
+
+        // Show success message with verification code for development
+        if (process.env.NODE_ENV === "development" && phoneResult.data?.code) {
+          alert(`Development mode: Your verification code is ${phoneResult.data.code}`);
+        }
       } else {
-        setErrors({ submit: result.error || "Failed to save profile" });
+        // Fallback for other roles
+        const response = await fetch("/api/onboarding", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          setErrors({ submit: result.error || "Failed to save profile" });
+          return;
+        }
       }
+
+      // Small delay to ensure database is updated
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Redirect to role-specific dashboard
+      const dashboardPath = formData.role === 'student' ? '/dashboard/student' :
+                           formData.role === 'alumni' ? '/dashboard/alumni' :
+                           formData.role === 'aspirant' ? '/dashboard/aspirant' :
+                           '/dashboard';
+      
+      // Force reload to ensure middleware sees the updated profile
+      window.location.href = dashboardPath;
     } catch {
       setErrors({ submit: "Network error. Please try again." });
     } finally {
@@ -463,37 +569,196 @@ export default function MultiStepForm() {
   );
 
   // Render additional info
-  const renderAdditionalInfo = () => (
+  const addSkill = () => {
+      const trimmed = skillInput.trim();
+      if (trimmed && !formData.skills.includes(trimmed)) {
+        updateField("skills", [...formData.skills, trimmed]);
+        setSkillInput("");
+      }
+    };
+
+  const removeSkill = (skillToRemove: string) => {
+      updateField("skills", formData.skills.filter(skill => skill !== skillToRemove));
+    };
+
+  const handleSkillKeyPress = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        addSkill();
+      }
+    };
+
+  const renderAdditionalInfo = () => {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-foreground">
+            Almost Done!
+          </h2>
+          <p className="text-muted-foreground mt-2">
+            Just a few more details
+          </p>
+        </div>
+
+        <div>
+          <Label htmlFor="skills">Skills & Interests</Label>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Input
+                id="skills"
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyDown={handleSkillKeyPress}
+                placeholder="Add a skill (press Enter or comma to add)"
+                className="flex-1"
+              />
+              <Button type="button" onClick={addSkill} variant="outline" size="sm">
+                Add
+              </Button>
+            </div>
+            {formData.skills.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {formData.skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="ml-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Add your technical skills, interests, and expertise areas
+          </p>
+        </div>
+
+        <div>
+          <Label htmlFor="bio">Brief Bio</Label>
+          <Textarea
+            id="bio"
+            value={formData.bio}
+            onChange={(e) => updateField("bio", e.target.value)}
+            placeholder="Tell us about yourself, your goals, and what you&apos;re looking for..."
+            rows={4}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  // Render verification step
+  const renderVerification = () => (
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">
-          Almost Done!
+          Verify Your Identity
         </h2>
         <p className="text-muted-foreground mt-2">
-          Just a few more details
+          Help us keep our community safe and trustworthy
         </p>
       </div>
 
-      <div>
-        <Label htmlFor="skills">Skills & Interests</Label>
-        <Input
-          id="skills"
-          value={formData.skills}
-          onChange={(e) => updateField("skills", e.target.value)}
-          placeholder="Programming, Design, Public Speaking"
-        />
-        <p className="text-xs text-muted-foreground mt-1">Separate with commas</p>
-      </div>
+      {(formData.role === "student" || formData.role === "alumni") && (
+        <div className="space-y-4">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              📋 ID Card Verification
+            </h3>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Please upload clear photos of your student/alumni ID card (front and back).
+              This helps verify your educational background and ensures a trusted community.
+            </p>
+          </div>
 
-      <div>
-        <Label htmlFor="bio">Brief Bio</Label>
-        <Textarea
-          id="bio"
-          value={formData.bio}
-          onChange={(e) => updateField("bio", e.target.value)}
-          placeholder="Tell us about yourself, your goals, and what you're looking for..."
-          rows={4}
-        />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="idCardFront">ID Card Front *</Label>
+              <Input
+                id="idCardFront"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) updateField("idCardFront", file);
+                }}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Upload front side of your ID card
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="idCardBack">ID Card Back</Label>
+              <Input
+                id="idCardBack"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) updateField("idCardBack", file);
+                }}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Upload back side if applicable
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {formData.role === "aspirant" && (
+        <div className="space-y-4">
+          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">
+              📱 Phone Verification
+            </h3>
+            <p className="text-sm text-green-700 dark:text-green-300">
+              We&apos;ll send a verification code to your phone number to confirm your identity.
+              This helps maintain a genuine community of aspirants.
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="phoneNumber">Phone Number *</Label>
+            <Input
+              id="phoneNumber"
+              type="tel"
+              value={formData.phoneNumber}
+              onChange={(e) => updateField("phoneNumber", e.target.value)}
+              placeholder="+91 9876543210"
+              className={errors.phoneNumber ? "border-red-500" : ""}
+            />
+            {errors.phoneNumber && (
+              <p className="text-destructive text-sm mt-1">{errors.phoneNumber}</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              Include country code (e.g., +91 for India)
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+        <h4 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">
+          🔒 Privacy & Security
+        </h4>
+        <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+          <li>• Your verification documents are encrypted and securely stored</li>
+          <li>• Only authorized administrators can review verification requests</li>
+          <li>• Your personal information is never shared without consent</li>
+          <li>• You can request deletion of verification data at any time</li>
+        </ul>
       </div>
     </div>
   );
@@ -503,6 +768,9 @@ export default function MultiStepForm() {
     if (currentStep === 1) return renderRoleSelection();
     if (currentStep === 2) return renderBasicInfo();
     if (currentStep === 3 && formData.role === "alumni") return renderProfessionalInfo();
+    if (currentStep === 3 && formData.role !== "alumni") return renderAdditionalInfo();
+    if (currentStep === 4 && formData.role === "alumni") return renderAdditionalInfo();
+    if ((currentStep === 4 && formData.role === "student") || (currentStep === 5)) return renderVerification();
     return renderAdditionalInfo();
   };
 

@@ -176,7 +176,7 @@ export const db = {
           .select(`
             *,
             author:profiles!posts_author_id_fkey(
-              id, full_name, avatar_url, role, company, designation
+              id, full_name, profile_image_url, role, company, designation
             )
           `)
           .eq("id", id)

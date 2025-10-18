@@ -1,4 +1,10 @@
-import { getSupabase } from "@/lib/supabase";
+"use client";
+// NOTE:
+// This overview is a Client Component because it's rendered inside a client dashboard shell.
+// To avoid the "async Client Component" error, all async data fetching was moved to
+// server API routes (/api/dashboard/alumni/*). We fetch from those endpoints here with
+// useEffect and store the results in local state.
+
 import { Profile, Post } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,92 +20,51 @@ import {
   Clock,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface OverviewAlumniProps {
   profile: Profile;
 }
 
-async function getAlumniStats(userId: string) {
-  const supabase = getSupabase();
+type Stats = { posts: number; views: number; likes: number; connections: number; messages: number };
 
-  try {
-    // Get posts created count
-    const { count: postsCount } = await supabase
-      .from("posts")
-      .select("*", { count: "exact", head: true })
-      .eq("author_id", userId)
-      .eq("is_active", true);
+export default function OverviewAlumni({ profile }: OverviewAlumniProps) {
+  const [stats, setStats] = useState<Stats>({ posts: 0, views: 0, likes: 0, connections: 0, messages: 0 });
+  const [myPosts, setMyPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    // Get total views on all posts
-    const { data: posts } = await supabase
-      .from("posts")
-      .select("views_count, likes_count")
-      .eq("author_id", userId);
-
-    const totalViews = posts?.reduce((sum, p) => sum + (p.views_count || 0), 0) || 0;
-    const totalLikes = posts?.reduce((sum, p) => sum + (p.likes_count || 0), 0) || 0;
-
-    // Get connections count
-    const { count: connectionsCount } = await supabase
-      .from("conversation_participants")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId);
-
-    // Get unread messages count
-    const { data: conversations } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id")
-      .eq("user_id", userId);
-
-    const conversationIds = conversations?.map((c) => c.conversation_id) || [];
-
-    let unreadCount = 0;
-    if (conversationIds.length > 0) {
-      const { count } = await supabase
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .in("conversation_id", conversationIds)
-        .neq("sender_id", userId);
-      unreadCount = count || 0;
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const [statsRes, postsRes] = await Promise.all([
+          fetch("/api/dashboard/alumni/stats"),
+          fetch("/api/dashboard/alumni/posts"),
+        ]);
+        const statsJson = await statsRes.json();
+        const postsJson = await postsRes.json();
+        if (!mounted) return;
+        if (statsRes.ok && statsJson?.data) setStats(statsJson.data);
+        if (postsRes.ok && Array.isArray(postsJson?.data)) setMyPosts(postsJson.data as Post[]);
+      } catch (e) {
+        console.error("Failed to load alumni overview:", e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
+    load();
+    return () => { mounted = false; };
+  }, []);
 
-    return {
-      posts: postsCount || 0,
-      views: totalViews,
-      likes: totalLikes,
-      connections: connectionsCount || 0,
-      messages: unreadCount,
-    };
-  } catch (error) {
-    console.error("Error fetching alumni stats:", error);
-    return { posts: 0, views: 0, likes: 0, connections: 0, messages: 0 };
+  if (loading) {
+    return (
+      <div className="p-6">
+        <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+          <CardContent className="py-10 text-center text-gray-600 dark:text-gray-300">Loading overview…</CardContent>
+        </Card>
+      </div>
+    );
   }
-}
-
-async function getMyRecentPosts(userId: string) {
-  const supabase = getSupabase();
-
-  try {
-    const { data: posts } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("author_id", userId)
-      .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .limit(5);
-
-    return (posts as unknown as Post[]) || [];
-  } catch (error) {
-    console.error("Error fetching alumni posts:", error);
-    return [];
-  }
-}
-
-export default async function OverviewAlumni({
-  profile,
-}: OverviewAlumniProps) {
-  const stats = await getAlumniStats(profile.user_id);
-  const myPosts = await getMyRecentPosts(profile.user_id);
 
   return (
     <div className="p-6 space-y-6">
